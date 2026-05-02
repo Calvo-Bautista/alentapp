@@ -67,6 +67,7 @@ Se definira la entidad `MedicalCertificate` con las siguientes propiedades y res
 
 ## Plan de Implementación
 1. Definir esquema de persistencia y correr migración.
-2. Crear tipos en shared y puerto en dominio.
-3. Implementar lógica de transacción (invalidar anteriores + crear nuevo) en el repositorio y caso de uso
-4. Crear controlador HTTP e integrarlo al router.
+2. Crear los tipos en @alentapp/shared (CreateMedicalCertificateRequest) y el puerto en el Dominio
+3. Implementar el repositorio y la lógica de transacción en NewMedicalCertificateUseCase para garantizar la invalidación de certificados anteriores y la creación del nuevo
+4. Crear el endpoint POST en el MedicalCertificateController para persistir el registro, y conectarlo con app.ts.
+5. Crear el formulario de carga en React y conectarlo con el servicio del backend.
