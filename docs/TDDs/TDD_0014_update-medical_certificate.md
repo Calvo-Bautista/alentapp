@@ -63,4 +63,5 @@ Se utilizará el paquete `@alentapp/shared` para la transferencia de datos.
 1. Actualizar las interfaces en el paquete @alentapp/shared (UpdateMedicalCertificateRequest)
 2. Ampliar el MedicalCertificateRepository con el método update
 3. Implementar la lógica en UpdateMedicalCertificateUseCase
-4. Crear la ruta PUT en el controlador
+4. Crear la ruta PUT /api/v1/medical-certificates/:id en el controlador y registrarla.
+5. Adaptar la vista en React para permitir la edición y el cambio de estado, conectándola con el endpoint del backend
