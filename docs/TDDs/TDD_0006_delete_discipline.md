@@ -22,3 +22,13 @@ Permitir a los administradores dar de baja sanciones de los socios en el sistema
 *   El sistema debe realizar un borrado físico de la base de datos (hard delete).
 *   Si el borrado es exitoso, la tabla debe actualizarse automáticamente.
 
+## Diseño Técnico (RFC)
+
+### Contrato de API (@alentapp/shared)
+
+Definiremos los tipos en el paquete compartido para asegurar sincronización:
+
+*   **Endpoint**: `DELETE /api/v1/discipline/:id`
+*   **Request Body**: `None`
+*   **Response**: `204 No Content` en caso de éxito.
+
