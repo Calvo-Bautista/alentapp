@@ -30,7 +30,7 @@ Permitir a los administrativos dar de baja permanentemente un deporte del sistem
 
 ### Modelo de Datos
 
-El borrado físico dependerá de la restricción de clave foránea con la tabla `Enrollment` definida en el esquema de Prisma.
+El borrado físico dependerá de la restricción de clave foránea con la tabla `Enrollment` definida en el modelo de datos.
 
 ### Contrato de API (@alentapp/shared)
 
@@ -43,7 +43,7 @@ Al tratarse de una operación destructiva, no se envía cuerpo en la petición H
 
 1. Puerto: SportRepository (Método `delete(id)`).
 2. Caso de Uso: DeleteSport (Comprueba existencia y delega la eliminación controlando errores de clave foránea).
-3. Adaptador de Salida: PostgresSportRepository (Eliminación usando el método `delete` de Prisma).
+3. Adaptador de Salida: PostgresSportRepository (Eliminación usando el método `delete` sobre la BD).
 4. Adaptador de Entrada: SportController (Ruta HTTP que extrae el `id` y devuelve un status 204).
 
 ## Casos de Borde y Errores

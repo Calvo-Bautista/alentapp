@@ -52,7 +52,7 @@ Se omitirá intencionalmente el campo `name` en el contrato para forzar su inmut
 
 1. Puerto: SportRepository (Método `update(id, data)`).
 2. Caso de Uso: UpdateSport (Orquesta la validación de capacidad y rechaza peticiones que incluyan el campo `name`).
-3. Adaptador de Salida: PostgresSportRepository (Actualización usando el método `update` de Prisma).
+3. Adaptador de Salida: PostgresSportRepository (Actualización usando el método `update` SOBRE la BD).
 4. Adaptador de Entrada: SportController (Ruta HTTP que extrae el `id` de la URL).
 
 ## Casos de Borde y Errores

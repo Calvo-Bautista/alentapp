@@ -60,7 +60,7 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 
 1. Puerto: SportRepository (Interface en el Dominio).
 2. Caso de Uso: CreateSport (Lógica que verifica si el nombre ya existe y valida la capacidad antes de llamar al repositorio).
-3. Adaptador de Salida: PostgresSportRepository (Implementación real en BD usando Prisma).
+3. Adaptador de Salida: PostgresSportRepository (Implementación real del repositorio sobre la BD).
 4. Adaptador de Entrada: SportController (Ruta HTTP).
 
 ## Casos de Borde y Errores
@@ -73,7 +73,7 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 
 ## Plan de Implementación
 
-1. Definir esquema de persistencia en `schema.prisma` y correr migración.
+1. Definir esquema de persistencia en la BD y correr migración.
 2. Crear tipos en shared y puerto en el Dominio.
 3. Implementar el repositorio y el caso de uso.
 4. Crear formulario en React y conectar con el endpoint del backend.
