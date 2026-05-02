@@ -57,3 +57,9 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 | campo member_id vacío | Mensaje: "La sanción debe corresponder a un socio" | 400 Bad Request |
 | error de conexión a DB | Mensaje: "Error interno, reintente más tarde" | 500 Internal Server Error |
 
+## Plan de Implementación
+1. Actualizar las interfaces en el paquete `@alentapp/shared` (`UpdateDisciplineRequest`).
+2. Ampliar el `DisciplineRepository` con el método `update`.
+3. Implementar la lógica en `UpdateDisciplineUseCase` utilizando el `DisciplineValidator` centralizado.
+4. Crear la ruta `PUT` en el controlador.
+5. Crear forms en React y conectarlo con el endpoint del backend.
