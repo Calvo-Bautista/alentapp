@@ -32,3 +32,10 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 *   **Request Body**: `None`
 *   **Response**: `204 No Content` en caso de éxito.
 
+### Componentes de Arquitectura Hexagonal
+
+1. Puerto: DisciplineRepository (Método delete(id)).
+2. Caso de Uso: DeleteDisciplineUseCase (Comprueba existencia previa vía findById y delega la eliminación).
+3. Adaptador de Salida: PostgresDisciplineRepository (Eliminación del registro mediante el repositorio con el método delete sobre la base de datos).
+4. Adaptador de Entrada: DisciplineController (Ruta HTTP que extrae el id de la request y devuelve un status 204 en caso de éxito).
+
