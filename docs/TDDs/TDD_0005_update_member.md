@@ -47,3 +47,13 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 4. Adaptador de Salida: PostgresDisciplineRepository (Implementación real en BD mediante Prisma).
 5. Adaptador de Entrada: DisciplineController (Ruta HTTP que agarra el id de la url y lo delega al caso de uso).
 
+## Casos de Borde y Errores
+| Escenario                   | Resultado Esperado                            | Código HTTP               |
+| ----------------------------| --------------------------------------------- | ------------------------- |
+| member_id no existente           | Mensaje: "No existe ese socio en el club"       | 400 Bad Request           |
+| id de la sanción no existente           | Mensaje: "No existe esa sanción en el club"       | 400 Bad Request           |
+| start_date mayor a end_date           | Mensaje: "La fecha de inicio debe ser menor a la fecha de fin"              | 400 Bad Request           |
+| start_date o end_date vacíos | Mensaje: "La sanción debe tener un lapso de tiempo" | 400 Bad Request |
+| campo member_id vacío | Mensaje: "La sanción debe corresponder a un socio" | 400 Bad Request |
+| error de conexión a DB | Mensaje: "Error interno, reintente más tarde" | 500 Internal Server Error |
+
