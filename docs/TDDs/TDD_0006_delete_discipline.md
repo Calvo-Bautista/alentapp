@@ -16,3 +16,9 @@ Permitir a los administradores dar de baja sanciones de los socios en el sistema
 *   **Nombre**: Administrativo/a del club
 *   **Necesidad**: Borrar sanciones de los socios en el sistema de forma rápida y segura. Se necesita que al eliminar una sanción, el socio este apto para entrar nuevamente a las instalaciones del club.
 
+### Criterios de Aceptación
+*   El sistema debe pedir una confirmación explícita (advertencia visual) antes de proceder con el borrado
+*   El sistema debe validar que la sanción exista antes de intentar borrarlo.
+*   El sistema debe realizar un borrado físico de la base de datos (hard delete).
+*   Si el borrado es exitoso, la tabla debe actualizarse automáticamente.
+
