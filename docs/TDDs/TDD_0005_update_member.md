@@ -22,3 +22,20 @@ Permitir a los administradores actualizar o modificar datos de las sanciones de 
 *   El sistema debe validar que si se modifican las fechas, la fecha de inicio sea menor a la fecha de fin..
 *   Si la edición es correcta, debe retornar los nuevos datos de la sanción actualizados.
 
+## Diseño Técnico (RFC)
+
+### Contrato de API (@alentapp/shared)
+
+Definiremos los tipos en el paquete compartido para asegurar sincronización:
+
+*   **Endpoint**: `PUT /api/v1/discipline/:id`
+*   **Request Body (UpdateDisciplineRequest)**:
+```ts
+{
+    reason?: string,
+    start_date?: date,
+    end_date?: date,
+    is_total_suspension?: boolean,
+    member_id?: string
+}
+```
