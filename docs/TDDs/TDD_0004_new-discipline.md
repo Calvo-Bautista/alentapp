@@ -69,3 +69,9 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 | campo member_id vacío | Mensaje: "La sanción debe corresponder a un socio" | 400 Bad Request |
 | error de conexión a DB | Mensaje: "Error interno, reintente más tarde" | 500 Internal Server Error |
 
+## Plan de Implementación
+1. Definir esquema de persistencia del modelo discipline y correr migración.
+2. Crear tipos en shared y puerto en el Dominio.
+3. Implementar el repositorio y el servicio del caso de uso para garantizar la correcta creación de la sanción.
+4. Crear el endpoint POST en el controller para persistir la nueva sanción, y conectarlo con app.ts.
+5. Crear forms en React y conectarlo con el endpoint del backend.
