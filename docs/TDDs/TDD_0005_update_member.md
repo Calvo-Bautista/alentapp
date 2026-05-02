@@ -39,3 +39,11 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
     member_id?: string
 }
 ```
+### Componentes de Arquitectura Hexagonal
+
+1. Puerto: DisciplineRepository (Método update(id, data)).
+2. Servicio de dominio: DisciplineValidator (Lógica que verifica que el socio a sancionar ya exista, y que la fecha de inicio sea anterior a la fecha de fin).
+3. Caso de Uso: UpdateDisciplineUseCase (Orquesta la validación y llama al repositorio).
+4. Adaptador de Salida: PostgresDisciplineRepository (Implementación real en BD mediante Prisma).
+5. Adaptador de Entrada: DisciplineController (Ruta HTTP que agarra el id de la url y lo delega al caso de uso).
+
