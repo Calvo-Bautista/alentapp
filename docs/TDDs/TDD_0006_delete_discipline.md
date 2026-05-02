@@ -46,3 +46,9 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 | eliminación exitosa           | Mensaje: "Respuesta vacia"              | 204 No Content           |
 | error de conexión a DB | Mensaje: "Error interno, reintente más tarde" | 500 Internal Server Error |
 
+## Plan de Implementación
+1. Ampliar el DisciplineRepository y PostgresDisciplineRepository con el método delete.
+2. Crear la lógica de negocio en DeleteDisciplineUseCase.
+3. Crear el endpoint DELETE /api/v1/discipline/:id en el DisciplineController y registrar rutas.
+4. Añadir el método delete al servicio Frontend correspondiente.
+5. Enlazar el botón de eliminación en la vista de DisciplinesView.tsx agregando la confirmación antes de hacer la llamada a la API.
