@@ -24,3 +24,16 @@ Eliminar el registro manual en papel y permitir a los administradores dar de alt
 *   El sistema debe permitir que la sanción tenga un motivo.
 *   Al finalizar, el sistema debe mostrar un mensaje de éxito y limpiar los datos del formulario.
 
+
+## Diseño Técnico (RFC)
+
+### Modelo de Datos
+
+Se define la entidad `discipline` con las siguientes propiedades y restricciones
+- `id`: Identificador único universal (UUID).
+- `reason`: Cadena de texto, representa la razon de la sanción (string).
+- `start_date`: Fecha de inicio de la sanción (date).
+- `end_date`: Fecha de finalización de la sanción posterior al inicio (date).
+- `is_total_suspension`: Indicador booleano de si la sanción es total (boolean).
+- `member_id`: Clave foránea relacionada con el socio (UUID).
+
