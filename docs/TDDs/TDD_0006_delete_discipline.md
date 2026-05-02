@@ -39,3 +39,10 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 3. Adaptador de Salida: PostgresDisciplineRepository (Eliminación del registro mediante el repositorio con el método delete sobre la base de datos).
 4. Adaptador de Entrada: DisciplineController (Ruta HTTP que extrae el id de la request y devuelve un status 204 en caso de éxito).
 
+## Casos de Borde y Errores
+| Escenario                   | Resultado Esperado                            | Código HTTP               |
+| ----------------------------| --------------------------------------------- | ------------------------- |
+| id no existente           | Mensaje: "No existe esa sanción en el club"       | 400 Bad Request           |
+| eliminación exitosa           | Mensaje: "Respuesta vacia"              | 204 No Content           |
+| error de conexión a DB | Mensaje: "Error interno, reintente más tarde" | 500 Internal Server Error |
+
