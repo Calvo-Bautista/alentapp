@@ -5,7 +5,7 @@ fecha: 2026-05-01
 titulo: Actualización de Sanciones
 ---
 
-# TDD-0001: Actualización de Sanciones
+# TDD-0005: Actualización de Sanciones
 
 ## Contexto de Negocio (PRD)
 

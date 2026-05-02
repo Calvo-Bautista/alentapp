@@ -5,7 +5,7 @@ fecha: 2026-05-01
 titulo: Eliminar Sanciones
 ---
 
-# TDD-0001: Alta de Sanciones
+# TDD-0006: Alta de Sanciones
 
 ## Contexto de Negocio (PRD)
 

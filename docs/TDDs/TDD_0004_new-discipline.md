@@ -5,7 +5,7 @@ fecha: 2026-05-01
 titulo: Alta de Sanciones
 ---
 
-# TDD-0001: Alta de Sanciones
+# TDD-0004: Alta de Sanciones
 
 ## Contexto de Negocio (PRD)
 
@@ -48,7 +48,7 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
     reason: string,
     start_date: date,
     end_date: date,
-    is_total_suspension: boolean
+    is_total_suspension: boolean,
     member_id: string
 }
 ```
