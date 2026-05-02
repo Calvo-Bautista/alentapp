@@ -52,4 +52,12 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
     member_id: string
 }
 ```
+### Componentes de Arquitectura Hexagonal
+
+1. Puerto: DisciplineRepository (Interface en el Dominio).
+2. Servicio de dominio: DisciplineValidator (Lógica que verifica que el socio a sancionar ya exista, y que la fecha de inicio sea anterior a la fecha de fin).
+3. Caso de Uso: CreateDiscipline (Usa las validaciones del servicio de dominio y luego llama al repositorio para crear la sanción).|
+4. Adaptador de Salida: PostgresDisciplineRepository (Implementación real en BD).
+5. Adaptador de Entrada: DisciplineController (Ruta HTTP que recibe la request de la sancion).
+
 
