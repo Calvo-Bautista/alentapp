@@ -52,5 +52,7 @@ Al tratarse de una operación destructiva que solo requiere conocer el identific
 ## Plan de Implementación
 
 1. Ampliar el `MedicalCertificateRepository` y su implementación en BD con el método `delete`.
-2. Crear la lógica de negocio en `DeleteMedicalCertificateUseCase`.
-3. Crear el endpoint `DELETE` en el controlador.
+2. Crear la lógica de negocio en `DeleteMedicalCertificateUseCase` .
+3. Crear el endpoint "DELETE" /api/v1/medical-certificates/:id en el controlador y registrar la ruta
+4. Añadir el método delete al servicio Frontend correspondiente
+5. Enlazar el botón de eliminación en la vista (MedicalCertificatesView.tsx), agregando la advertencia de confirmación antes de hacer la llamada a la API.
