@@ -37,3 +37,19 @@ Se define la entidad `discipline` con las siguientes propiedades y restricciones
 - `is_total_suspension`: Indicador booleano de si la sanción es total (boolean).
 - `member_id`: Clave foránea relacionada con el socio (UUID).
 
+### Contrato de API (@alentapp/shared)
+
+Definiremos los tipos en el paquete compartido para asegurar sincronización:
+
+*   **Endpoint**: `POST /api/v1/discipline`
+*   **Request Body**:
+```ts
+{
+    reason: string,
+    start_date: date,
+    end_date: date,
+    is_total_suspension: boolean
+    member_id: string
+}
+```
+
