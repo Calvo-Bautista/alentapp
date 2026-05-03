@@ -39,8 +39,12 @@ Actualizar la información de un pago existente, para registrar la fecha efectiv
 {  
     id: string;
     amount: number;
+    month: string;
+    year: string;
     status: 'Pending' | 'Paid' ;
+    due_date: string;
     payment_date: string;
+    member_id: string
 }
 ```
 
