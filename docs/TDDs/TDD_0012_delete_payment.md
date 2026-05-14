@@ -33,20 +33,8 @@ Permitir a los administrativos anular un registro de pago que fue cargado por er
 
 ### Contrato de API (@alentapp/shared)
 
-- Endpoint: `PUT /api/v1/payments/:id/cancel`
-- Request Body:
-```ts
-{  
-    id: string;
-    amount: number;
-    month: string;
-    year: string;
-    status: 'Canceled';
-    due_date: string;
-    payment_date: string;
-    member_id: string
-}
-```
+- Endpoint: `DELETE /api/v1/payments/:id/cancel`
+- Request Body: None
 
 ### Componentes de Arquitectura Hexagonal
 
