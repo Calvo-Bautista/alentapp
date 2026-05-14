@@ -11,6 +11,10 @@ import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
+import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
+import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
+import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -35,11 +39,15 @@ export function buildApp() {
     // Repositorios
     const memberRepo = new PostgresMemberRepository();
     const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
-    
+    const certificateRepo = new PostgresMedicalCertificateRepository();
+
+
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
     const paymentValidator = new PaymentValidator(memberRepo, paymentRepo);
-    
+    const certificateValidator = new MedicalCertificateValidator(memberRepo);
+
+
     // Casos de Uso Member
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
     const getMembersUseCase = new GetMembersUseCase(memberRepo);
@@ -49,6 +57,9 @@ export function buildApp() {
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
 
+    // Casos de Uso MedicalCertificate
+    const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+
     // Controladores
     const memberController = new MemberController(
         createMemberUseCase, 
@@ -56,8 +67,9 @@ export function buildApp() {
         updateMemberUseCase,
         deleteMemberUseCase
     );
-
+    
     const paymentController = new PaymentController(createPaymentUseCase);
+    const medicalCertificateController = new MedicalCertificateController(createCertificateUseCase);
 
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -67,6 +79,9 @@ export function buildApp() {
 
     // Rutas Payment
     server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
+
+    // Rutas MedicalCertificate
+    server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
