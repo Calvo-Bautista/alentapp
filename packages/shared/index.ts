@@ -52,3 +52,11 @@ export interface CreateDisciplineRequest {
   is_total_suspension: boolean;
   member_id: string;
 }
+
+export interface UpdateDisciplineRequest {
+  reason?: string;
+  start_date?: Date;
+  end_date?: Date;
+  is_total_suspension?: boolean;
+  member_id?: string;
+}
