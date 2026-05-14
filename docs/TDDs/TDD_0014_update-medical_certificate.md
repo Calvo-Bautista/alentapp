@@ -12,12 +12,12 @@ titulo: Actualización de Certificado Médico
 
 ### Objetivo
 
-Permitir a los administrativos corregir o modificar la información de un certificado médico existente en el sistema, o cambiar su estado de validación una vez comprobado el documento físico
+Permitir a los administrativos corregir o modificar la información de un certificado médico existente en el sistema, o cambiar su estado de validación.
 
 ### User Persona
 
 - Nombre: Alberto (Tesorero/Administrativo).
-- Necesidad: Modificar datos de los certificados rápidamente. Por ejemplo, corregir una matrícula mal tipeada o cambiar el estado a validado una vez que se verificó la autenticidad del mismo
+- Necesidad: Modificar datos de los certificados rápidamente. Por ejemplo, corregir una matrícula mal tipeada o cambiar su estado de validación.
 
 ### Criterios de Aceptación
 
