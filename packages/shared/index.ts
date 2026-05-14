@@ -44,3 +44,11 @@ export interface DisciplineDTO {
   is_total_suspension: boolean;
   member_id: string;
 }
+
+export interface CreateDisciplineRequest {
+  reason: string;
+  start_date: Date;
+  end_date: Date;
+  is_total_suspension: boolean;
+  member_id: string;
+}
