@@ -31,3 +31,38 @@ export interface UpdateMemberRequest {
   category?: MemberCategory;
   status?: MemberStatus;
 }
+
+// ==========================================
+// Payment
+// ==========================================
+
+// 1. Definimos los estados posibles según la regla de negocio
+export type PaymentStatus = 'Pending' | 'Paid' | 'Canceled';
+
+// 2. El DTO principal
+export interface PaymentDTO {
+  id: string;
+  amount: number;
+  month: number;
+  year: number;
+  status: PaymentStatus;
+  due_date: string; // ISO Date String (YYYY-MM-DD)
+  member_id: string;
+  payment_date: string | null; // ISO Date String
+}
+
+// 3. El contrato para crear un Pago (POST)
+// No se pide id, status ni payment_date, porque esos se generan solos.
+export interface CreatePaymentRequest {
+  amount: number;
+  month: number;
+  year: number;
+  due_date: string; // ISO Date String (YYYY-MM-DD)
+  member_id: string;
+}
+
+// 4. El contrato para actualizar un Pago
+export interface UpdatePaymentRequest {
+  status?: PaymentStatus;
+  payment_date?: string | null;
+}
