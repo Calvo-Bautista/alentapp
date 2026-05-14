@@ -31,3 +31,16 @@ export interface UpdateMemberRequest {
   category?: MemberCategory;
   status?: MemberStatus;
 }
+
+// ==========================================
+// Discipline
+// ==========================================
+
+export interface DisciplineDTO {
+  id: string;
+  reason: string;
+  start_date: Date;
+  end_date: Date;
+  is_total_suspension: boolean;
+  member_id: string;
+}
