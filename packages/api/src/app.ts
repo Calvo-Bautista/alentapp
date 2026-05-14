@@ -1,12 +1,16 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { PostgresMemberRepository } from './infrastructure/PostgresMemberRepository.js';
+import { PostgresPaymentRepository } from './infrastructure/PostgresPaymentRepository.js';
 import { MemberValidator } from './domain/services/MemberValidator.js';
+import { PaymentValidator } from './domain/services/PaymentValidator.js';
 import { CreateMemberUseCase } from './application/NewMemberUseCase.js';
 import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
+import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
+import { PaymentController } from './delivery/PaymentController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -28,14 +32,24 @@ export function buildApp() {
         credentials: true,
     });
 
+    // Repositorios
     const memberRepo = new PostgresMemberRepository();
-    const memberValidator = new MemberValidator(memberRepo);
+    const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
     
+    // Validadores
+    const memberValidator = new MemberValidator(memberRepo);
+    const paymentValidator = new PaymentValidator(memberRepo, paymentRepo);
+    
+    // Casos de Uso Member
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
     const getMembersUseCase = new GetMembersUseCase(memberRepo);
     const updateMemberUseCase = new UpdateMemberUseCase(memberRepo, memberValidator);
     const deleteMemberUseCase = new DeleteMemberUseCase(memberRepo);
 
+    // Casos de Uso Payment
+    const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
+
+    // Controladores
     const memberController = new MemberController(
         createMemberUseCase, 
         getMembersUseCase,
@@ -43,10 +57,16 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
+    const paymentController = new PaymentController(createPaymentUseCase);
+
+    // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
     server.post('/api/v1/socios', memberController.create.bind(memberController));
     server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
+
+    // Rutas Payment
+    server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
