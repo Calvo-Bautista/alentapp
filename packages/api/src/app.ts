@@ -10,6 +10,7 @@ import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
+import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
 
@@ -50,6 +51,7 @@ export function buildApp() {
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
+    const deletePaymentUseCase = new DeletePaymentUseCase(paymentRepo);
 
     // Controladores
     const memberController = new MemberController(
@@ -61,7 +63,8 @@ export function buildApp() {
 
     const paymentController = new PaymentController(
         createPaymentUseCase,
-        getPaymentsUseCase
+        getPaymentsUseCase,
+        deletePaymentUseCase
     );
 
     // Rutas Member
@@ -71,8 +74,14 @@ export function buildApp() {
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
     // Rutas Payment
-    server.get('/api/v1/pagos', paymentController.getAll.bind(paymentController));
-    server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
+    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
+    server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.delete('/api/v1/payments/:id/cancel', paymentController.delete.bind(paymentController));
+    
+    // TDD-0012: Intento de DELETE físico debe retornar 405
+    server.delete('/api/v1/payments/:id', async (req, rep) => {
+        return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
+    });
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
