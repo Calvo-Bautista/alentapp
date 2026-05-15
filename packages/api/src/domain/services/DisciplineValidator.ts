@@ -6,6 +6,10 @@ export class DisciplineValidator {
     ) {}
 
     validateDates(startDate: string, endDate: string): void {
+        if (!endDate || !startDate) {
+            throw new Error('La sanción debe tener un lapso de tiempo');
+        }
+
         const now = new Date();
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -15,9 +19,6 @@ export class DisciplineValidator {
         }
         if (end < start) {
             throw new Error('La fecha de inicio debe ser menor a la fecha de fin');
-        }
-        if (!endDate || !startDate) {
-            throw new Error('La sanción debe tener un lapso de tiempo');
         }
     }
 
@@ -31,9 +32,6 @@ export class DisciplineValidator {
 
     async validateMemberExists(memberId: string): Promise<void> {
         const member = await this.memberRepo.findById(memberId);
-        if (!memberId) {
-            throw new Error('La sanción debe corresponder a un socio');
-        }
         if (!member) {
             throw new Error('No existe ese socio en el club');
         }
