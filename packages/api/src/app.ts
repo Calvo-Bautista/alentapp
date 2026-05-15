@@ -9,6 +9,7 @@ import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
+import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
@@ -55,6 +56,7 @@ export function buildApp() {
 
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
+    const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
@@ -67,8 +69,11 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
-    const paymentController = new PaymentController(createPaymentUseCase);
     const disciplineController = new DisciplineController(createDisciplineUseCase);
+    const paymentController = new PaymentController(
+        createPaymentUseCase,
+        getPaymentsUseCase
+    );
 
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -77,6 +82,7 @@ export function buildApp() {
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
     // Rutas Payment
+    server.get('/api/v1/pagos', paymentController.getAll.bind(paymentController));
     server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
 
     // Rutas Discipline
