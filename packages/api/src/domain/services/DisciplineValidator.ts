@@ -19,12 +19,12 @@ export class DisciplineValidator {
     }
 
     // REVISAR FUNCION PQ NO SE SI FUNCIONA
-    haveTotal(isTotalSuspention: boolean): Boolean {
-        if (!isTotalSuspention) {
-            return false;
-        }
-        return true;
-    }
+    // haveTotal(isTotalSuspention: boolean): Boolean {
+    //     if (!isTotalSuspention) {
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     async validateMemberExists(memberId: string): Promise<void> {
         const member = await this.memberRepo.findById(memberId);
