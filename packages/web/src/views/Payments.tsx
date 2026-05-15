@@ -8,60 +8,58 @@ import {
   Box,
   Flex,
   Center,
-  Badge
+  Badge,
+  IconButton
 } from "@chakra-ui/react";
-import { LuPlus, LuRefreshCw } from "react-icons/lu";
-import { useState } from "react";
-
-// Interfaces temporales (Mocks)
-// Una vez que se apruebe la PR del backend, estos tipos se importarán de @alentapp/shared
-interface PaymentMock {
-  id: string;
-  amount: number;
-  month: number;
-  year: number;
-  status: 'Pending' | 'Paid' | 'Canceled';
-  due_date: string;
-  member_id: string;
-  member_name: string;
-}
-
-const MOCK_PAYMENTS: PaymentMock[] = [
-  {
-    id: "1",
-    amount: 1500.50,
-    month: 5,
-    year: 2026,
-    status: 'Pending',
-    due_date: "2026-05-10",
-    member_id: "m1",
-    member_name: "Juan Pérez"
-  },
-  {
-    id: "2",
-    amount: 2000,
-    month: 4,
-    year: 2026,
-    status: 'Paid',
-    due_date: "2026-04-10",
-    member_id: "m2",
-    member_name: "María García"
-  },
-  {
-    id: "3",
-    amount: 1500.50,
-    month: 3,
-    year: 2026,
-    status: 'Canceled',
-    due_date: "2026-03-10",
-    member_id: "m1",
-    member_name: "Juan Pérez"
-  }
-];
+import { LuPlus, LuRefreshCw, LuTrash2 } from "react-icons/lu";
+import { useState, useEffect, useCallback } from "react";
+import { paymentsService } from "../services/payments";
+import type { PaymentWithMemberDTO } from "@alentapp/shared";
+import { toaster } from "../components/ui/toaster";
 
 export function PaymentsView() {
-  const [payments] = useState<PaymentMock[]>(MOCK_PAYMENTS);
-  const [isLoading] = useState(false);
+  const [payments, setPayments] = useState<PaymentWithMemberDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchPayments = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await paymentsService.getAll();
+      setPayments(data as PaymentWithMemberDTO[]);
+    } catch (error: any) {
+      toaster.create({
+        title: "Error",
+        description: error.message,
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  const handleCancelPayment = async (id: string) => {
+    if (!confirm("¿Está seguro que desea cancelar este pago?")) return;
+    
+    try {
+      await paymentsService.cancel(id);
+      toaster.create({
+        title: "Pago cancelado",
+        description: "El registro ha sido anulado correctamente.",
+        type: "success",
+      });
+      fetchPayments();
+    } catch (error: any) {
+      toaster.create({
+        title: "Error al cancelar",
+        description: error.message,
+        type: "error",
+      });
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -82,7 +80,7 @@ export function PaymentsView() {
           </Text>
         </Stack>
         <HStack gap="3">
-          <Button variant="outline" disabled={isLoading}>
+          <Button variant="outline" onClick={fetchPayments} disabled={isLoading} loading={isLoading}>
             <LuRefreshCw /> Actualizar
           </Button>
           <Button colorPalette="blue" size="md">
@@ -107,6 +105,7 @@ export function PaymentsView() {
               <Table.ColumnHeader py="4">Monto</Table.ColumnHeader>
               <Table.ColumnHeader py="4">Vencimiento</Table.ColumnHeader>
               <Table.ColumnHeader py="4">Estado</Table.ColumnHeader>
+              <Table.ColumnHeader py="4" textAlign="right">Acciones</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -126,6 +125,18 @@ export function PaymentsView() {
                 </Table.Cell>
                 <Table.Cell>
                   {getStatusBadge(payment.status)}
+                </Table.Cell>
+                <Table.Cell textAlign="right">
+                  <IconButton
+                    aria-label="Cancelar pago"
+                    variant="ghost"
+                    colorPalette="red"
+                    size="sm"
+                    disabled={payment.status !== 'Pending'}
+                    onClick={() => handleCancelPayment(payment.id)}
+                  >
+                    <LuTrash2 />
+                  </IconButton>
                 </Table.Cell>
               </Table.Row>
             ))}
