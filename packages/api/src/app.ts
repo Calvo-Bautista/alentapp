@@ -15,6 +15,7 @@ import { PaymentController } from './delivery/PaymentController.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
+import { UpdateMedicalCertificateUseCase } from './application/UpdateMedicalCertificateUseCase.js';
 import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
@@ -71,6 +72,7 @@ export function buildApp() {
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
 
     // Controladores
     const memberController = new MemberController(
@@ -81,7 +83,12 @@ export function buildApp() {
     );
     
     const paymentController = new PaymentController(createPaymentUseCase);
-    const medicalCertificateController = new MedicalCertificateController(createCertificateUseCase);
+
+    
+    const medicalCertificateController = new MedicalCertificateController(
+        createCertificateUseCase,
+        updateCertificateUseCase,
+    );
 
     const disciplineController = new DisciplineController(createDisciplineUseCase);
     const paymentController = new PaymentController(
@@ -101,6 +108,7 @@ export function buildApp() {
 
     // Rutas MedicalCertificate
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
+    server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
 

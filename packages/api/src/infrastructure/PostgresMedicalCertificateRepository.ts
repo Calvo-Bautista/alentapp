@@ -1,6 +1,6 @@
 import { PrismaClient } from '../generated/client/client.js';
 import { MedicalCertificateRepository } from '../domain/MedicalCertificateRepository.js';
-import { MedicalCertificateDTO } from '@alentapp/shared';
+import { MedicalCertificateDTO, UpdateMedicalCertificateRequest } from '@alentapp/shared';
 
 
 type DBMedicalCertificate = {
@@ -29,6 +29,29 @@ export class PostgresMedicalCertificateRepository implements MedicalCertificateR
 
         return this.mapToDTO(certificate);
     }
+
+        async findById(id: string): Promise<MedicalCertificateDTO | null> {
+        const certificate = await prisma.medicalCertificate.findUnique({
+            where: { id },
+        });
+
+        return certificate ? this.mapToDTO(certificate) : null;
+    }
+
+    async update(id: string, data: UpdateMedicalCertificateRequest): Promise<MedicalCertificateDTO> {
+        const certificate = await prisma.medicalCertificate.update({
+            where: { id },
+            data: {
+                ...(data.issue_date && { issue_date: new Date(data.issue_date) }),
+                ...(data.expiry_date && { expiry_date: new Date(data.expiry_date) }),
+                ...(data.doctor_license && { doctor_license: data.doctor_license }),
+                ...(data.is_validated !== undefined && { is_validated: data.is_validated }),
+            },
+        });
+
+        return this.mapToDTO(certificate);
+    }
+
 
     async invalidateByMemberId(memberId: string): Promise<void> {
         await this.prisma.medicalCertificate.updateMany({

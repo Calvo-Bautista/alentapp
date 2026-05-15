@@ -33,7 +33,6 @@ export interface UpdateMemberRequest {
 }
 
 
-
 // ==========================================
 // Medical Certificate
 // ==========================================
@@ -53,6 +52,13 @@ export interface CreateMedicalCertificateRequest {
   issue_date: string; // ISO Date String (YYYY-MM-DD)
   expiry_date: string; // ISO Date String (YYYY-MM-DD)
   doctor_license: string;
+}
+
+export interface UpdateMedicalCertificateRequest {
+  issue_date?: string;    // ISO Date String (YYYY-MM-DD)
+  expiry_date?: string;   // ISO Date String (YYYY-MM-DD)
+  doctor_license?: string;
+  is_validated?: boolean;
 }
 
 // ==========================================
