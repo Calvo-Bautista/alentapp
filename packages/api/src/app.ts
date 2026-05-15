@@ -9,23 +9,28 @@ import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
+import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
 import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
+import { DisciplineController } from './delivery/DisciplineController.js';
+import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
+import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
+import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 
 export function buildApp() {
     const server = Fastify({
         logger: {
             level: 'info',
-            transport: process.env.NODE_ENV === 'development' 
-            ? {
-                target: 'pino-pretty',
-                options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname' },
-                } 
-            : undefined,
+            transport: process.env.NODE_ENV === 'development'
+                ? {
+                    target: 'pino-pretty',
+                    options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname' },
+                }
+                : undefined,
         },
     });
 
@@ -41,12 +46,14 @@ export function buildApp() {
     const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
     const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
 
+    const disciplineRepo = new PostgresDisciplineRepository(memberRepo['prisma']);
 
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
     const paymentValidator = new PaymentValidator(memberRepo, paymentRepo);
     const certificateValidator = new MedicalCertificateValidator(memberRepo);
 
+    const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
 
     // Casos de Uso Member
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
@@ -54,15 +61,20 @@ export function buildApp() {
     const updateMemberUseCase = new UpdateMemberUseCase(memberRepo, memberValidator);
     const deleteMemberUseCase = new DeleteMemberUseCase(memberRepo);
 
+
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
+    const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
+
+    // Casos de Uso Discipline
+    const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
 
     // Controladores
     const memberController = new MemberController(
-        createMemberUseCase, 
+        createMemberUseCase,
         getMembersUseCase,
         updateMemberUseCase,
         deleteMemberUseCase
@@ -71,6 +83,12 @@ export function buildApp() {
     const paymentController = new PaymentController(createPaymentUseCase);
     const medicalCertificateController = new MedicalCertificateController(createCertificateUseCase);
 
+    const disciplineController = new DisciplineController(createDisciplineUseCase);
+    const paymentController = new PaymentController(
+        createPaymentUseCase,
+        getPaymentsUseCase
+    );
+
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
     server.post('/api/v1/socios', memberController.create.bind(memberController));
@@ -78,10 +96,13 @@ export function buildApp() {
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
     // Rutas Payment
+    server.get('/api/v1/pagos', paymentController.getAll.bind(paymentController));
     server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
 
     // Rutas MedicalCertificate
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
+    // Rutas Discipline
+    server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
