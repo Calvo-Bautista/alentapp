@@ -14,6 +14,7 @@ import { PaymentController } from './delivery/PaymentController.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
+import { UpdateMedicalCertificateUseCase } from './application/UpdateMedicalCertificateUseCase.js';
 import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
 
 export function buildApp() {
@@ -59,6 +60,7 @@ export function buildApp() {
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
 
     // Controladores
     const memberController = new MemberController(
@@ -69,7 +71,12 @@ export function buildApp() {
     );
     
     const paymentController = new PaymentController(createPaymentUseCase);
-    const medicalCertificateController = new MedicalCertificateController(createCertificateUseCase);
+
+    
+    const medicalCertificateController = new MedicalCertificateController(
+        createCertificateUseCase,
+        updateCertificateUseCase,
+    );
 
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -82,6 +89,7 @@ export function buildApp() {
 
     // Rutas MedicalCertificate
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
+    server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
