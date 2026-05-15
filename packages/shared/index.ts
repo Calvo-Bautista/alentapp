@@ -51,6 +51,10 @@ export interface PaymentDTO {
   payment_date: string | null; // ISO Date String
 }
 
+export interface PaymentWithMemberDTO extends PaymentDTO {
+  member_name: string;
+}
+
 // 3. El contrato para crear un Pago (POST)
 // No se pide id, status ni payment_date, porque esos se generan solos.
 export interface CreatePaymentRequest {
@@ -74,24 +78,24 @@ export interface UpdatePaymentRequest {
 export interface DisciplineDTO {
   id: string;
   reason: string;
-  start_date: Date;
-  end_date: Date;
+  start_date: string;
+  end_date: string;
   is_total_suspension: boolean;
   member_id: string;
 }
 
 export interface CreateDisciplineRequest {
   reason: string;
-  start_date: Date;
-  end_date: Date;
+  start_date: string;
+  end_date: string;
   is_total_suspension: boolean;
   member_id: string;
 }
 
 export interface UpdateDisciplineRequest {
   reason?: string;
-  start_date?: Date;
-  end_date?: Date;
+  start_date?: string;
+  end_date?: string;
   is_total_suspension?: boolean;
   member_id?: string;
 }

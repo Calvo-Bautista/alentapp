@@ -5,12 +5,15 @@ export class DisciplineValidator {
     constructor(private readonly disciplineRepo: DisciplineRepository, private readonly memberRepo: MemberRepository
     ) {}
 
-    validateDates(startDate: Date, endDate: Date): void {
+    validateDates(startDate: string, endDate: string): void {
         const now = new Date();
-        if (startDate < now) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start < now) {
             throw new Error('La fecha de inicio no puede ser en el pasado');
         }
-        if (endDate < startDate) {
+        if (end < start) {
             throw new Error('La fecha de inicio debe ser menor a la fecha de fin');
         }
         if (!endDate || !startDate) {
