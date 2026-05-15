@@ -1,0 +1,12 @@
+import { DisciplineRepository } from '../domain/DisciplineRepository.js';
+import { DisciplineValidator } from '../domain/services/DisciplineValidator.js';
+import { DisciplineDTO, UpdateDisciplineRequest } from '@alentapp/shared';
+
+export class UpdateDisciplineUseCase {
+    constructor(
+        private readonly disciplineRepo: DisciplineRepository,
+        private readonly disciplineValidator: DisciplineValidator
+    ) {}
+
+    
+}
