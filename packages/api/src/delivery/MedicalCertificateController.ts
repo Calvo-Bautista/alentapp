@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { GetMedicalCertificatesUseCase } from '../application/GetMedicalCertificatesUseCase.js';
 import { CreateMedicalCertificateUseCase } from '../application/NewMedicalCertificateUseCase.js';
 import { CreateMedicalCertificateRequest, UpdateMedicalCertificateRequest } from '@alentapp/shared';
 import { UpdateMedicalCertificateUseCase } from '../application/UpdateMedicalCertificateUseCase.js';
@@ -7,7 +8,21 @@ export class MedicalCertificateController {
     constructor(
         private readonly createCertificateUseCase: CreateMedicalCertificateUseCase,
         private readonly updateCertificateUseCase: UpdateMedicalCertificateUseCase,
+        private readonly getCertificatesUseCase: GetMedicalCertificatesUseCase,
     ) {}
+
+    async getByMember(
+        request: FastifyRequest<{ Params: { memberId: string } }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { memberId } = request.params;
+            const certificates = await this.getCertificatesUseCase.execute(memberId);
+            return reply.status(200).send({ data: certificates });
+        } catch (error: any) {
+            return reply.status(500).send({ error: 'Error interno, reintente mas tarde' });
+        }
+    }
 
     async create(
         request: FastifyRequest<{ Body: CreateMedicalCertificateRequest }>,
