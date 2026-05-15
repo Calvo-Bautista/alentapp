@@ -16,6 +16,7 @@ import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
+import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -60,6 +61,7 @@ export function buildApp() {
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
+    const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
 
     // Controladores
     const memberController = new MemberController(
@@ -69,7 +71,11 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
-    const disciplineController = new DisciplineController(createDisciplineUseCase);
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase,
+        updateDisciplineUseCase,
+    );
+
     const paymentController = new PaymentController(
         createPaymentUseCase,
         getPaymentsUseCase
@@ -87,6 +93,7 @@ export function buildApp() {
 
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
+    server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
