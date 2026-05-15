@@ -60,7 +60,8 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
                     ...(data.reason && { reason: data.reason }),
                     ...(data.start_date && { start_date: new Date(data.start_date) }),
                     ...(data.end_date && { end_date: new Date(data.end_date) }),
-                    ...(data.is_total_suspension && { is_total_suspension: data.is_total_suspension })
+                    ...(data.is_total_suspension !== undefined && { is_total_suspension: data.is_total_suspension }),
+                    ...(data.member_id && { member_id: data.member_id })
                 },
             });
     
