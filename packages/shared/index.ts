@@ -51,6 +51,10 @@ export interface PaymentDTO {
   payment_date: string | null; // ISO Date String
 }
 
+export interface PaymentWithMemberDTO extends PaymentDTO {
+  member_name: string;
+}
+
 // 3. El contrato para crear un Pago (POST)
 // No se pide id, status ni payment_date, porque esos se generan solos.
 export interface CreatePaymentRequest {
