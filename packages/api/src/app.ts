@@ -23,6 +23,7 @@ import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.j
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
+import { DeleteDisciplineUseCase } from './application/DeleteDisciplineUseCase.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -69,6 +70,7 @@ export function buildApp() {
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
     const deletePaymentUseCase = new DeletePaymentUseCase(paymentRepo);
+    const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
@@ -97,6 +99,7 @@ export function buildApp() {
     const disciplineController = new DisciplineController(
         createDisciplineUseCase,
         updateDisciplineUseCase,
+        deleteDisciplineUseCase
     );
 
     const paymentController = new PaymentController(
@@ -127,6 +130,7 @@ export function buildApp() {
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
+    server.delete('/api/v1/disciplinas/:id', disciplineController.delete.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
