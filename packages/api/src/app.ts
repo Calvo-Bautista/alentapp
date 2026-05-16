@@ -37,6 +37,7 @@ import { LockerValidator } from './domain/services/LockerValidator.js';
 import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
 import { UpdateLockerUseCase } from './application/UpdateLockerUseCase.js';
 import { DeleteLockerUseCase } from './application/DeleteLockerUseCase.js';
+import { GetLockersUseCase } from './application/GetLockersUseCase.js';
 import { LockerController } from './delivery/LockerController.js';
 
 export function buildApp() {
@@ -105,6 +106,7 @@ export function buildApp() {
     const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
     const updateLockerUseCase = new UpdateLockerUseCase(lockerRepo, lockerValidator);
     const deleteLockerUseCase = new DeleteLockerUseCase(lockerRepo);
+    const getLockersUseCase = new GetLockersUseCase(lockerRepo);
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
@@ -148,7 +150,7 @@ export function buildApp() {
 
     const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase);
 
-    const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase, deleteLockerUseCase);
+    const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase, deleteLockerUseCase, getLockersUseCase);
 
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -185,6 +187,7 @@ export function buildApp() {
     server.delete('/api/v1/sports/:id', sportController.delete.bind(sportController));
 
     // Rutas Locker
+    server.get('/api/v1/lockers', lockerController.getAll.bind(lockerController));
     server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
     server.put('/api/v1/lockers/:id', lockerController.update.bind(lockerController));
     server.delete('/api/v1/lockers/:id', lockerController.delete.bind(lockerController));
