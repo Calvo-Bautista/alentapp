@@ -24,6 +24,7 @@ import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.j
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
+import { DeleteDisciplineUseCase } from './application/DeleteDisciplineUseCase.js';
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.js';
 import { SportValidator } from './domain/services/SportValidator.js';
 import { CreateSportUseCase } from './application/CreateSportUseCase.js';
@@ -88,6 +89,7 @@ export function buildApp() {
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
     const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
+    const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
 
     // Casos de Uso Sport
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
@@ -124,6 +126,12 @@ export function buildApp() {
         updateDisciplineUseCase,
     );
 
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase,
+        updateDisciplineUseCase,
+        deleteDisciplineUseCase
+    );
+
     const paymentController = new PaymentController(
         createPaymentUseCase,
         getPaymentsUseCase,
@@ -147,7 +155,7 @@ export function buildApp() {
     
     // TDD-0012: Intento de DELETE físico debe retornar 405
     server.delete('/api/v1/payments/:id', async (req, rep) => {
-        return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
+       return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
     });
 
     // Rutas MedicalCertificate
@@ -157,6 +165,7 @@ export function buildApp() {
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
+    server.delete('/api/v1/disciplinas/:id', disciplineController.delete.bind(disciplineController));
 
     // Rutas Sport
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
