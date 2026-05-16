@@ -149,3 +149,11 @@ export interface CreateSportRequest {
   additional_price: number;
   requires_medical_certificate: boolean;
 }
+
+// 'name' se omite intencionalmente: el nombre es inmutable tras la creación (TDD-0017)
+export interface UpdateSportRequest {
+  description?: string;
+  max_capacity?: number;
+  additional_price?: number;
+  requires_medical_certificate?: boolean;
+}
