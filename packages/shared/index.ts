@@ -32,6 +32,35 @@ export interface UpdateMemberRequest {
   status?: MemberStatus;
 }
 
+
+// ==========================================
+// Medical Certificate
+// ==========================================
+
+export interface MedicalCertificateDTO {
+  id: string; // UUID
+  member_id: string;
+  issue_date: string; // ISO Date String (YYYY-MM-DD)
+  expiry_date: string; // ISO Date String (YYYY-MM-DD)
+  doctor_license: string;
+  is_validated: boolean;
+  created_at: string; // ISO Date String
+}
+
+export interface CreateMedicalCertificateRequest {
+  member_id: string;
+  issue_date: string; // ISO Date String (YYYY-MM-DD)
+  expiry_date: string; // ISO Date String (YYYY-MM-DD)
+  doctor_license: string;
+}
+
+export interface UpdateMedicalCertificateRequest {
+  issue_date?: string;    // ISO Date String (YYYY-MM-DD)
+  expiry_date?: string;   // ISO Date String (YYYY-MM-DD)
+  doctor_license?: string;
+  is_validated?: boolean;
+}
+
 // ==========================================
 // Payment
 // ==========================================
@@ -98,4 +127,55 @@ export interface UpdateDisciplineRequest {
   end_date?: string;
   is_total_suspension?: boolean;
   member_id?: string;
+}
+
+// ==========================================
+// Sport
+// ==========================================
+
+export interface SportDTO {
+  id: string;
+  name: string;
+  description: string;
+  max_capacity: number;
+  additional_price: number;
+  requires_medical_certificate: boolean;
+}
+
+export interface CreateSportRequest {
+  name: string;
+  description: string;
+  max_capacity: number;
+  additional_price: number;
+  requires_medical_certificate: boolean;
+}
+
+// 'name' se omite intencionalmente: el nombre es inmutable tras la creación (TDD-0017)
+export interface UpdateSportRequest {
+  description?: string;
+  max_capacity?: number;
+  additional_price?: number;
+  requires_medical_certificate?: boolean;
+}
+
+// ==========================================
+// Locker
+// ==========================================
+
+export type LockerStatus = 'Available' | 'Occupied' | 'Maintenance';
+
+export interface LockerDTO {
+  id: string;
+  number: number;
+  location: string;
+  status: LockerStatus;
+  member_id: string | null;
+  created_at: string; // ISO Date String
+}
+
+export interface CreateLockerRequest {
+  number: number;
+  location: string;
+  status?: LockerStatus;
+  member_id?: string | null;
 }

@@ -53,6 +53,14 @@ export class PostgresPaymentRepository implements PaymentRepository {
         return payment ? this.mapToDTO(payment) : null;
     }
 
+    async delete(id: string): Promise<void> {
+        // Borrado lógico según TDD-0012
+        await prisma.payment.update({
+            where: { id },
+            data: { status: 'Canceled' }
+        });
+    }
+
     private mapToDTO(record: PrismaPayment): PaymentDTO {
         return {
             id: record.id,

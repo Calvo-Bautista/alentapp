@@ -5,6 +5,7 @@ export interface PaymentRepository {
   create(payment: Omit<PaymentDTO, 'id'>): Promise<PaymentDTO>;
   findAll(memberId?: string): Promise<PaymentWithMemberDTO[]>;
   findById(id: string): Promise<PaymentDTO | null>;
+  delete(id: string): Promise<void>;
   
   // Necesario para la validación de duplicados en el alta
   findByMemberMonthYearAndAmount(
