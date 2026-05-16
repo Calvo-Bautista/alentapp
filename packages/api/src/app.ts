@@ -13,6 +13,7 @@ import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
 import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { GetMedicalCertificatesUseCase } from './application/GetMedicalCertificatesUseCase.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
@@ -75,6 +76,7 @@ export function buildApp() {
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
     const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const getCertificatesUseCase = new GetMedicalCertificatesUseCase(certificateRepo);
 
     // Controladores
     const memberController = new MemberController(
@@ -90,6 +92,7 @@ export function buildApp() {
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
         updateCertificateUseCase,
+        getCertificatesUseCase
     );
 
     const disciplineController = new DisciplineController(createDisciplineUseCase);
@@ -116,6 +119,7 @@ export function buildApp() {
     });
 
     // Rutas MedicalCertificate
+    server.get('/api/v1/medical-certificates/:memberId', medicalCertificateController.getByMember.bind(medicalCertificateController));
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
     // Rutas Discipline
