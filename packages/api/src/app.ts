@@ -13,6 +13,7 @@ import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
 import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { GetMedicalCertificatesUseCase } from './application/GetMedicalCertificatesUseCase.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
@@ -25,6 +26,17 @@ import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
 import { DeleteDisciplineUseCase } from './application/DeleteDisciplineUseCase.js';
 import { GetDisciplineUseCase } from './application/GetDisciplineUseCase.js';
+import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.js';
+import { SportValidator } from './domain/services/SportValidator.js';
+import { CreateSportUseCase } from './application/CreateSportUseCase.js';
+import { UpdateSportUseCase } from './application/UpdateSportUseCase.js';
+import { DeleteSportUseCase } from './application/DeleteSportUseCase.js';
+import { SportController } from './delivery/SportController.js';
+import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
+import { LockerValidator } from './domain/services/LockerValidator.js';
+import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
+import { UpdateLockerUseCase } from './application/UpdateLockerUseCase.js';
+import { LockerController } from './delivery/LockerController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -52,6 +64,8 @@ export function buildApp() {
     const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
 
     const disciplineRepo = new PostgresDisciplineRepository(memberRepo['prisma']);
+    const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
+    const lockerRepo = new PostgresLockerRepository();
 
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
@@ -59,6 +73,8 @@ export function buildApp() {
     const certificateValidator = new MedicalCertificateValidator(memberRepo);
 
     const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
+    const sportValidator = new SportValidator(sportRepo);
+    const lockerValidator = new LockerValidator(lockerRepo, memberRepo);
 
     // Casos de Uso Member
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
@@ -79,9 +95,19 @@ export function buildApp() {
     const getDisciplineUseCase = new GetDisciplineUseCase(disciplineRepo);
 
 
+    // Casos de Uso Sport
+    const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
+    const updateSportUseCase = new UpdateSportUseCase(sportRepo, sportValidator);
+    const deleteSportUseCase = new DeleteSportUseCase(sportRepo);
+
+    // Casos de Uso Locker
+    const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
+    const updateLockerUseCase = new UpdateLockerUseCase(lockerRepo, lockerValidator);
+
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
     const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const getCertificatesUseCase = new GetMedicalCertificatesUseCase(certificateRepo);
 
     // Controladores
     const memberController = new MemberController(
@@ -97,6 +123,12 @@ export function buildApp() {
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
         updateCertificateUseCase,
+        getCertificatesUseCase
+    );
+
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase,
+        updateDisciplineUseCase,
     );
 
     const disciplineController = new DisciplineController(
@@ -111,6 +143,10 @@ export function buildApp() {
         getPaymentsUseCase,
         deletePaymentUseCase
     );
+
+    const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase);
+
+    const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase);
 
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -129,6 +165,7 @@ export function buildApp() {
     });
 
     // Rutas MedicalCertificate
+    server.get('/api/v1/medical-certificates/:memberId', medicalCertificateController.getByMember.bind(medicalCertificateController));
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
     // Rutas Discipline
@@ -138,6 +175,17 @@ export function buildApp() {
     server.get('/api/v1/disciplinas', disciplineController.getAll.bind(disciplineController));
     server.get('/api/v1/disciplinas/:id', disciplineController.getById.bind(disciplineController));
     server.get('/api/v1/disciplinas/socio/:memberId', disciplineController.getByMember.bind(disciplineController));
+
+    // Rutas Sport
+    server.get('/api/v1/sports', sportController.getAll.bind(sportController));
+    server.post('/api/v1/sports', sportController.create.bind(sportController));
+    server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
+    server.delete('/api/v1/sports/:id', sportController.delete.bind(sportController));
+
+    // Rutas Locker
+    server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
+    server.put('/api/v1/lockers/:id', lockerController.update.bind(lockerController));
+
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
     });
