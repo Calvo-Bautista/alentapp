@@ -13,7 +13,7 @@ import {
   Badge,
   Input,
 } from "@chakra-ui/react";
-import { LuPlus, LuPencil, LuRefreshCw } from "react-icons/lu";
+import { LuPlus, LuPencil, LuTrash2, LuRefreshCw } from "react-icons/lu";
 import { useEffect, useMemo, useState } from "react";
 import { lockersService } from "../services/lockers";
 import { membersService } from "../services/members";
@@ -169,6 +169,24 @@ export function LockersView() {
       alert(err.message || "Error al guardar el casillero");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (locker: LockerDTO) => {
+    const memberName = locker.member_id ? memberNameById.get(locker.member_id) : null;
+    const warning = memberName
+      ? `El casillero #${locker.number} está asignado a ${memberName}. ¿Eliminarlo igualmente?`
+      : `¿Eliminar el casillero #${locker.number}? Esta acción no se puede deshacer.`;
+
+    if (!window.confirm(warning)) {
+      return;
+    }
+
+    try {
+      await lockersService.delete(locker.id);
+      fetchAll();
+    } catch (err: any) {
+      alert(err.message || "Error al eliminar el casillero");
     }
   };
 
@@ -348,6 +366,15 @@ export function LockersView() {
                           onClick={() => openEditModal(locker)}
                         >
                           <LuPencil />
+                        </IconButton>
+                        <IconButton
+                          variant="ghost"
+                          size="sm"
+                          colorPalette="red"
+                          aria-label="Eliminar casillero"
+                          onClick={() => handleDelete(locker)}
+                        >
+                          <LuTrash2 />
                         </IconButton>
                       </HStack>
                     </Table.Cell>
