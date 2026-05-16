@@ -179,3 +179,10 @@ export interface CreateLockerRequest {
   status?: LockerStatus;
   member_id?: string | null;
 }
+
+export interface UpdateLockerRequest {
+  number?: number;
+  location?: string;
+  status?: LockerStatus;
+  member_id?: string | null;
+}
