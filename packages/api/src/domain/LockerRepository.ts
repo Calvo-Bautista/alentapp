@@ -5,6 +5,7 @@ import { LockerDTO, UpdateLockerRequest } from '@alentapp/shared';
 
 export interface LockerRepository {
   create(data: Omit<LockerDTO, 'id' | 'created_at'>): Promise<LockerDTO>;
+  findAll(): Promise<LockerDTO[]>;
   findById(id: string): Promise<LockerDTO | null>;
   findByNumber(number: number): Promise<LockerDTO | null>;
   update(id: string, data: UpdateLockerRequest): Promise<LockerDTO>;
