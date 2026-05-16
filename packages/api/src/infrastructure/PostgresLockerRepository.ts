@@ -39,7 +39,7 @@ export class PostgresLockerRepository implements LockerRepository {
             orderBy: { number: 'asc' },
         });
 
-        return lockers.map((l) => this.mapToDTO(l));
+        return lockers.map((l: DBLocker) => this.mapToDTO(l));
     }
 
     async findById(id: string): Promise<LockerDTO | null> {
