@@ -1,14 +1,15 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateSportUseCase } from '../application/CreateSportUseCase.js';
-import { CreateSportRequest } from '@alentapp/shared';
+import { UpdateSportUseCase } from '../application/UpdateSportUseCase.js';
+import { CreateSportRequest, UpdateSportRequest } from '@alentapp/shared';
 
 export class SportController {
     constructor(
         private readonly createSportUseCase: CreateSportUseCase,
+        private readonly updateSportUseCase: UpdateSportUseCase,
     ) { }
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
-
         return reply.status(200).send({ data: [] });
     }
 
@@ -24,6 +25,28 @@ export class SportController {
                 return reply.status(409).send({ error: error.message });
             }
             if (error.message.includes('La capacidad máxima debe ser mayor a 0')) {
+                return reply.status(400).send({ error: error.message });
+            }
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
+        }
+    }
+
+    async update(
+        request: FastifyRequest<{ Params: { id: string }; Body: UpdateSportRequest }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = request.params;
+            const sport = await this.updateSportUseCase.execute(id, request.body);
+            return reply.status(200).send({ data: sport });
+        } catch (error: any) {
+            if (error.message.includes('El deporte no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
+            if (
+                error.message.includes('El nombre del deporte es inmutable') ||
+                error.message.includes('La capacidad máxima debe ser mayor a 0')
+            ) {
                 return reply.status(400).send({ error: error.message });
             }
             return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
