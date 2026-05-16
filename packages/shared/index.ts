@@ -32,6 +32,35 @@ export interface UpdateMemberRequest {
   status?: MemberStatus;
 }
 
+
+// ==========================================
+// Medical Certificate
+// ==========================================
+
+export interface MedicalCertificateDTO {
+  id: string; // UUID
+  member_id: string;
+  issue_date: string; // ISO Date String (YYYY-MM-DD)
+  expiry_date: string; // ISO Date String (YYYY-MM-DD)
+  doctor_license: string;
+  is_validated: boolean;
+  created_at: string; // ISO Date String
+}
+
+export interface CreateMedicalCertificateRequest {
+  member_id: string;
+  issue_date: string; // ISO Date String (YYYY-MM-DD)
+  expiry_date: string; // ISO Date String (YYYY-MM-DD)
+  doctor_license: string;
+}
+
+export interface UpdateMedicalCertificateRequest {
+  issue_date?: string;    // ISO Date String (YYYY-MM-DD)
+  expiry_date?: string;   // ISO Date String (YYYY-MM-DD)
+  doctor_license?: string;
+  is_validated?: boolean;
+}
+
 // ==========================================
 // Payment
 // ==========================================

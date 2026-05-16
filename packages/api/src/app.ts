@@ -10,8 +10,14 @@ import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
+import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
+import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
+import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
+import { UpdateMedicalCertificateUseCase } from './application/UpdateMedicalCertificateUseCase.js';
+import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
@@ -41,11 +47,15 @@ export function buildApp() {
     // Repositorios
     const memberRepo = new PostgresMemberRepository();
     const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
+    const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
+
     const disciplineRepo = new PostgresDisciplineRepository(memberRepo['prisma']);
 
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
     const paymentValidator = new PaymentValidator(memberRepo, paymentRepo);
+    const certificateValidator = new MedicalCertificateValidator(memberRepo);
+
     const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
 
     // Casos de Uso Member
@@ -58,10 +68,15 @@ export function buildApp() {
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
+    const deletePaymentUseCase = new DeletePaymentUseCase(paymentRepo);
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
     const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
+
+    // Casos de Uso MedicalCertificate
+    const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
 
     // Controladores
     const memberController = new MemberController(
@@ -69,6 +84,14 @@ export function buildApp() {
         getMembersUseCase,
         updateMemberUseCase,
         deleteMemberUseCase
+    );
+    
+    const paymentController = new PaymentController(createPaymentUseCase);
+
+    
+    const medicalCertificateController = new MedicalCertificateController(
+        createCertificateUseCase,
+        updateCertificateUseCase,
     );
 
     const disciplineController = new DisciplineController(
@@ -78,7 +101,8 @@ export function buildApp() {
 
     const paymentController = new PaymentController(
         createPaymentUseCase,
-        getPaymentsUseCase
+        getPaymentsUseCase,
+        deletePaymentUseCase
     );
 
     // Rutas Member
@@ -88,9 +112,18 @@ export function buildApp() {
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
     // Rutas Payment
-    server.get('/api/v1/pagos', paymentController.getAll.bind(paymentController));
-    server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
+    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
+    server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.delete('/api/v1/payments/:id/cancel', paymentController.delete.bind(paymentController));
+    
+    // TDD-0012: Intento de DELETE físico debe retornar 405
+    server.delete('/api/v1/payments/:id', async (req, rep) => {
+        return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
+    });
 
+    // Rutas MedicalCertificate
+    server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
+    server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
