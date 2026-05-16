@@ -23,6 +23,7 @@ import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
+import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.js';
 import { SportValidator } from './domain/services/SportValidator.js';
 import { CreateSportUseCase } from './application/CreateSportUseCase.js';
@@ -86,6 +87,7 @@ export function buildApp() {
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
+    const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
 
     // Casos de Uso Sport
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
@@ -117,7 +119,11 @@ export function buildApp() {
         getCertificatesUseCase
     );
 
-    const disciplineController = new DisciplineController(createDisciplineUseCase);
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase,
+        updateDisciplineUseCase,
+    );
+
     const paymentController = new PaymentController(
         createPaymentUseCase,
         getPaymentsUseCase,
@@ -150,6 +156,7 @@ export function buildApp() {
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
+    server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
 
     // Rutas Sport
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
