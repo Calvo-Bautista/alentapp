@@ -70,11 +70,11 @@ export function buildApp() {
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
     const deletePaymentUseCase = new DeletePaymentUseCase(paymentRepo);
-    const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
     const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
+    const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
@@ -121,7 +121,7 @@ export function buildApp() {
     
     // TDD-0012: Intento de DELETE físico debe retornar 405
     server.delete('/api/v1/payments/:id', async (req, rep) => {
-        return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
+       return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
     });
 
     // Rutas MedicalCertificate
