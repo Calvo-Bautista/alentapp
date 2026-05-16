@@ -23,6 +23,10 @@ import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
+import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.js';
+import { SportValidator } from './domain/services/SportValidator.js';
+import { CreateSportUseCase } from './application/CreateSportUseCase.js';
+import { SportController } from './delivery/SportController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -50,6 +54,7 @@ export function buildApp() {
     const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
 
     const disciplineRepo = new PostgresDisciplineRepository(memberRepo['prisma']);
+    const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
 
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
@@ -57,6 +62,7 @@ export function buildApp() {
     const certificateValidator = new MedicalCertificateValidator(memberRepo);
 
     const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
+    const sportValidator = new SportValidator(sportRepo);
 
     // Casos de Uso Member
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
@@ -72,6 +78,9 @@ export function buildApp() {
 
     // Casos de Uso Discipline
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
+
+    // Casos de Uso Sport
+    const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
@@ -102,6 +111,8 @@ export function buildApp() {
         deletePaymentUseCase
     );
 
+    const sportController = new SportController(createSportUseCase);
+
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
     server.post('/api/v1/socios', memberController.create.bind(memberController));
@@ -124,6 +135,10 @@ export function buildApp() {
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
+
+    // Rutas Sport
+    server.get('/api/v1/sports', sportController.getAll.bind(sportController));
+    server.post('/api/v1/sports', sportController.create.bind(sportController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
