@@ -28,6 +28,10 @@ import { SportValidator } from './domain/services/SportValidator.js';
 import { CreateSportUseCase } from './application/CreateSportUseCase.js';
 import { UpdateSportUseCase } from './application/UpdateSportUseCase.js';
 import { SportController } from './delivery/SportController.js';
+import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
+import { LockerValidator } from './domain/services/LockerValidator.js';
+import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
+import { LockerController } from './delivery/LockerController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -56,6 +60,7 @@ export function buildApp() {
 
     const disciplineRepo = new PostgresDisciplineRepository(memberRepo['prisma']);
     const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
+    const lockerRepo = new PostgresLockerRepository();
 
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
@@ -64,6 +69,7 @@ export function buildApp() {
 
     const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
     const sportValidator = new SportValidator(sportRepo);
+    const lockerValidator = new LockerValidator(lockerRepo, memberRepo);
 
     // Casos de Uso Member
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
@@ -83,6 +89,9 @@ export function buildApp() {
     // Casos de Uso Sport
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
     const updateSportUseCase = new UpdateSportUseCase(sportRepo, sportValidator);
+
+    // Casos de Uso Locker
+    const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
@@ -115,6 +124,8 @@ export function buildApp() {
 
     const sportController = new SportController(createSportUseCase, updateSportUseCase);
 
+    const lockerController = new LockerController(createLockerUseCase);
+
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
     server.post('/api/v1/socios', memberController.create.bind(memberController));
@@ -142,6 +153,9 @@ export function buildApp() {
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
+
+    // Rutas Locker
+    server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
