@@ -3,6 +3,7 @@ import {
   Button,
   Heading,
   HStack,
+  IconButton,
   Stack,
   Text,
   Box,
@@ -10,12 +11,40 @@ import {
   Spinner,
   Center,
   Badge,
+  Input,
 } from "@chakra-ui/react";
-import { LuRefreshCw } from "react-icons/lu";
+import { LuPlus, LuPencil, LuRefreshCw } from "react-icons/lu";
 import { useEffect, useMemo, useState } from "react";
 import { lockersService } from "../services/lockers";
 import { membersService } from "../services/members";
-import type { LockerDTO, LockerStatus, MemberDTO } from "@alentapp/shared";
+import type {
+  LockerDTO,
+  LockerStatus,
+  MemberDTO,
+  CreateLockerRequest,
+  UpdateLockerRequest,
+} from "@alentapp/shared";
+import {
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+  DialogActionTrigger,
+  DialogCloseTrigger,
+} from "../components/ui/dialog";
+import { Field } from "../components/ui/field";
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+  SelectContent,
+  SelectItem,
+  createListCollection,
+} from "../components/ui/select";
+
+const SIN_SOCIO_VALUE = "__none__";
 
 const statusLabel: Record<LockerStatus, string> = {
   Available: "Disponible",
@@ -29,17 +58,55 @@ const statusColor: Record<LockerStatus, string> = {
   Maintenance: "orange",
 };
 
+const statusCollection = createListCollection({
+  items: [
+    { label: statusLabel.Available, value: "Available" },
+    { label: statusLabel.Occupied, value: "Occupied" },
+    { label: statusLabel.Maintenance, value: "Maintenance" },
+  ],
+});
+
+type FormData = {
+  number: number;
+  location: string;
+  status: LockerStatus;
+  member_id: string | null;
+};
+
+const emptyForm: FormData = {
+  number: 1,
+  location: "",
+  status: "Available",
+  member_id: null,
+};
+
 export function LockersView() {
   const [lockers, setLockers] = useState<LockerDTO[]>([]);
   const [members, setMembers] = useState<MemberDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingLockerId, setEditingLockerId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData>(emptyForm);
+
   const memberNameById = useMemo(() => {
     const map = new Map<string, string>();
     members.forEach((m) => map.set(m.id, m.name));
     return map;
   }, [members]);
+
+  const memberCollection = useMemo(
+    () =>
+      createListCollection({
+        items: [
+          { label: "Sin socio", value: SIN_SOCIO_VALUE },
+          ...members.map((m) => ({ label: m.name, value: m.id })),
+        ],
+      }),
+    [members],
+  );
 
   const fetchAll = async () => {
     setIsLoading(true);
@@ -58,87 +125,239 @@ export function LockersView() {
     }
   };
 
+  const openCreateModal = () => {
+    setEditingLockerId(null);
+    setFormData(emptyForm);
+    setIsDialogOpen(true);
+  };
+
+  const openEditModal = (locker: LockerDTO) => {
+    setEditingLockerId(locker.id);
+    setFormData({
+      number: locker.number,
+      location: locker.location,
+      status: locker.status,
+      member_id: locker.member_id,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (editingLockerId) {
+        const payload: UpdateLockerRequest = {
+          number: formData.number,
+          location: formData.location,
+          status: formData.status,
+          member_id: formData.member_id,
+        };
+        await lockersService.update(editingLockerId, payload);
+      } else {
+        const payload: CreateLockerRequest = {
+          number: formData.number,
+          location: formData.location,
+          status: formData.status,
+          member_id: formData.member_id,
+        };
+        await lockersService.create(payload);
+      }
+      setIsDialogOpen(false);
+      fetchAll();
+    } catch (err: any) {
+      alert(err.message || "Error al guardar el casillero");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     fetchAll();
   }, []);
 
+  const selectedMemberValue = formData.member_id ?? SIN_SOCIO_VALUE;
+
   return (
-    <Stack gap="8">
-      <Flex justify="space-between" align="center">
-        <Stack gap="1">
-          <Heading size="2xl" fontWeight="bold">Administración de Casilleros</Heading>
-          <Text color="fg.muted" fontSize="md">
-            Gestiona los casilleros del club, su estado y los socios asignados.
-          </Text>
-        </Stack>
-        <HStack gap="3">
-          <Button variant="outline" onClick={fetchAll} disabled={isLoading}>
-            <LuRefreshCw /> Actualizar
-          </Button>
-        </HStack>
-      </Flex>
+    <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
+      <Stack gap="8">
+        <Flex justify="space-between" align="center">
+          <Stack gap="1">
+            <Heading size="2xl" fontWeight="bold">Administración de Casilleros</Heading>
+            <Text color="fg.muted" fontSize="md">
+              Gestiona los casilleros del club, su estado y los socios asignados.
+            </Text>
+          </Stack>
+          <HStack gap="3">
+            <Button variant="outline" onClick={fetchAll} disabled={isLoading}>
+              <LuRefreshCw /> Actualizar
+            </Button>
+            <Button colorPalette="blue" size="md" onClick={openCreateModal}>
+              <LuPlus /> Agregar Casillero
+            </Button>
+          </HStack>
+        </Flex>
 
-      {error && (
-        <Box p="4" bg="red.50" color="red.700" borderRadius="md" border="1px solid" borderColor="red.200">
-          <Text fontWeight="bold">Error:</Text>
-          <Text>{error}</Text>
-        </Box>
-      )}
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>{editingLockerId ? "Editar Casillero" : "Agregar Nuevo Casillero"}</DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+              <Stack gap="4">
+                <Field label="Número" required>
+                  <Input
+                    type="number"
+                    min={1}
+                    placeholder="Ej. 42"
+                    value={formData.number}
+                    onChange={(e) =>
+                      setFormData({ ...formData, number: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </Field>
+                <Field label="Ubicación" required>
+                  <Input
+                    placeholder="Ej. Vestuario A - Pasillo 1"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    required
+                  />
+                </Field>
+                <Field label="Estado" required>
+                  <SelectRoot
+                    collection={statusCollection}
+                    value={[formData.status]}
+                    onValueChange={(e) =>
+                      setFormData({ ...formData, status: e.value[0] as LockerStatus })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValueText placeholder="Seleccione un estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusCollection.items.map((s) => (
+                        <SelectItem item={s} key={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </SelectRoot>
+                </Field>
+                <Field label="Socio asignado">
+                  <SelectRoot
+                    collection={memberCollection}
+                    value={[selectedMemberValue]}
+                    onValueChange={(e) => {
+                      const v = e.value[0];
+                      setFormData({
+                        ...formData,
+                        member_id: v === SIN_SOCIO_VALUE ? null : v,
+                      });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValueText placeholder="Sin socio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {memberCollection.items.map((m) => (
+                        <SelectItem item={m} key={m.value}>
+                          {m.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </SelectRoot>
+                </Field>
+              </Stack>
+            </DialogBody>
+            <DialogFooter>
+              <DialogActionTrigger asChild>
+                <Button variant="outline">Cancelar</Button>
+              </DialogActionTrigger>
+              <Button type="submit" colorPalette="blue" loading={isSubmitting}>
+                {editingLockerId ? "Guardar Cambios" : "Crear Casillero"}
+              </Button>
+            </DialogFooter>
+            <DialogCloseTrigger />
+          </form>
+        </DialogContent>
 
-      <Box
-        bg="bg.panel"
-        borderRadius="xl"
-        boxShadow="sm"
-        borderWidth="1px"
-        overflow="hidden"
-        minH="300px"
-        position="relative"
-      >
-        {isLoading ? (
-          <Center h="300px">
-            <Stack align="center" gap="4">
-              <Spinner size="xl" color="blue.500" />
-              <Text color="fg.muted">Cargando casilleros...</Text>
-            </Stack>
-          </Center>
-        ) : lockers.length === 0 ? (
-          <Center h="300px">
-            <Stack align="center" gap="4">
-              <Text color="fg.muted">No se encontraron casilleros.</Text>
-              <Button variant="ghost" onClick={fetchAll}>Reintentar</Button>
-            </Stack>
-          </Center>
-        ) : (
-          <Table.Root size="md" variant="line" interactive>
-            <Table.Header>
-              <Table.Row bg="bg.muted/50">
-                <Table.ColumnHeader py="4">Número</Table.ColumnHeader>
-                <Table.ColumnHeader py="4">Ubicación</Table.ColumnHeader>
-                <Table.ColumnHeader py="4">Estado</Table.ColumnHeader>
-                <Table.ColumnHeader py="4">Socio</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {lockers.map((locker) => (
-                <Table.Row key={locker.id} _hover={{ bg: "bg.muted/30" }}>
-                  <Table.Cell fontWeight="semibold" color="fg.emphasized">
-                    #{locker.number}
-                  </Table.Cell>
-                  <Table.Cell color="fg.muted">{locker.location}</Table.Cell>
-                  <Table.Cell>
-                    <Badge colorPalette={statusColor[locker.status]} variant="solid">
-                      {statusLabel[locker.status]}
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell color="fg.muted">
-                    {locker.member_id ? memberNameById.get(locker.member_id) ?? "—" : "—"}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+        {error && (
+          <Box p="4" bg="red.50" color="red.700" borderRadius="md" border="1px solid" borderColor="red.200">
+            <Text fontWeight="bold">Error:</Text>
+            <Text>{error}</Text>
+          </Box>
         )}
-      </Box>
-    </Stack>
+
+        <Box
+          bg="bg.panel"
+          borderRadius="xl"
+          boxShadow="sm"
+          borderWidth="1px"
+          overflow="hidden"
+          minH="300px"
+          position="relative"
+        >
+          {isLoading ? (
+            <Center h="300px">
+              <Stack align="center" gap="4">
+                <Spinner size="xl" color="blue.500" />
+                <Text color="fg.muted">Cargando casilleros...</Text>
+              </Stack>
+            </Center>
+          ) : lockers.length === 0 ? (
+            <Center h="300px">
+              <Stack align="center" gap="4">
+                <Text color="fg.muted">No se encontraron casilleros.</Text>
+                <Button variant="ghost" onClick={fetchAll}>Reintentar</Button>
+              </Stack>
+            </Center>
+          ) : (
+            <Table.Root size="md" variant="line" interactive>
+              <Table.Header>
+                <Table.Row bg="bg.muted/50">
+                  <Table.ColumnHeader py="4">Número</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4">Ubicación</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4">Estado</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4">Socio</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4" textAlign="end">Acciones</Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {lockers.map((locker) => (
+                  <Table.Row key={locker.id} _hover={{ bg: "bg.muted/30" }}>
+                    <Table.Cell fontWeight="semibold" color="fg.emphasized">
+                      #{locker.number}
+                    </Table.Cell>
+                    <Table.Cell color="fg.muted">{locker.location}</Table.Cell>
+                    <Table.Cell>
+                      <Badge colorPalette={statusColor[locker.status]} variant="solid">
+                        {statusLabel[locker.status]}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell color="fg.muted">
+                      {locker.member_id ? memberNameById.get(locker.member_id) ?? "—" : "—"}
+                    </Table.Cell>
+                    <Table.Cell textAlign="end">
+                      <HStack gap="2" justify="flex-end">
+                        <IconButton
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Editar casillero"
+                          onClick={() => openEditModal(locker)}
+                        >
+                          <LuPencil />
+                        </IconButton>
+                      </HStack>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
+        </Box>
+      </Stack>
+    </DialogRoot>
   );
 }
