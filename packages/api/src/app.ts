@@ -64,7 +64,7 @@ export function buildApp() {
     const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
     const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
 
-    const disciplineRepo = new PostgresDisciplineRepository(memberRepo['prisma']);
+    const disciplineRepo = new PostgresDisciplineRepository();
     const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
     const lockerRepo = new PostgresLockerRepository();
 
@@ -118,10 +118,10 @@ export function buildApp() {
         updateMemberUseCase,
         deleteMemberUseCase
     );
-    
+
     const paymentController = new PaymentController(createPaymentUseCase);
 
-    
+
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
         updateCertificateUseCase,
@@ -160,10 +160,10 @@ export function buildApp() {
     server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
     server.delete('/api/v1/payments/:id/cancel', paymentController.delete.bind(paymentController));
-    
+
     // TDD-0012: Intento de DELETE físico debe retornar 405
     server.delete('/api/v1/payments/:id', async (req, rep) => {
-       return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
+        return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
     });
 
     // Rutas MedicalCertificate
