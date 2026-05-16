@@ -25,6 +25,7 @@ import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplin
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
 import { DeleteDisciplineUseCase } from './application/DeleteDisciplineUseCase.js';
+import { GetDisciplineUseCase } from './application/GetDisciplineUseCase.js';
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.js';
 import { SportValidator } from './domain/services/SportValidator.js';
 import { CreateSportUseCase } from './application/CreateSportUseCase.js';
@@ -91,6 +92,8 @@ export function buildApp() {
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
     const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
     const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
+    const getDisciplineUseCase = new GetDisciplineUseCase(disciplineRepo);
+
 
     // Casos de Uso Sport
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
@@ -131,7 +134,8 @@ export function buildApp() {
     const disciplineController = new DisciplineController(
         createDisciplineUseCase,
         updateDisciplineUseCase,
-        deleteDisciplineUseCase
+        deleteDisciplineUseCase,
+        getDisciplineUseCase,
     );
 
     const paymentController = new PaymentController(
@@ -168,6 +172,9 @@ export function buildApp() {
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
     server.delete('/api/v1/disciplinas/:id', disciplineController.delete.bind(disciplineController));
+    server.get('/api/v1/disciplinas', disciplineController.getAll.bind(disciplineController));
+    server.get('/api/v1/disciplinas/:id', disciplineController.getById.bind(disciplineController));
+    server.get('/api/v1/disciplinas/socio/:memberId', disciplineController.getByMember.bind(disciplineController));
 
     // Rutas Sport
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
