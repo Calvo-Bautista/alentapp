@@ -87,3 +87,14 @@ model Discipline {
 
     @@map("discipline")
 }
+
+model Sport {
+    id                           String   @id @default(uuid())
+    name                         String   @unique
+    description                  String
+    max_capacity                 Int
+    additional_price             Float    @default(0)
+    requires_medical_certificate Boolean  @default(false)
+
+    @@map("sports")
+}
