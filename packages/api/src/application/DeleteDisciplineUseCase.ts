@@ -1,6 +1,6 @@
 import { DisciplineRepository } from '../domain/DisciplineRepository.js';
 
-export class DeleteMemberUseCase {
+export class DeleteDisciplineUseCase {
     constructor(private readonly disciplineRepository: DisciplineRepository) {}
 
     async execute(id: string): Promise<void> {
