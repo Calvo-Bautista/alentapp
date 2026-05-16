@@ -31,6 +31,7 @@ import { SportController } from './delivery/SportController.js';
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
 import { LockerValidator } from './domain/services/LockerValidator.js';
 import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
+import { UpdateLockerUseCase } from './application/UpdateLockerUseCase.js';
 import { LockerController } from './delivery/LockerController.js';
 
 export function buildApp() {
@@ -92,6 +93,7 @@ export function buildApp() {
 
     // Casos de Uso Locker
     const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
+    const updateLockerUseCase = new UpdateLockerUseCase(lockerRepo, lockerValidator);
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
@@ -124,7 +126,7 @@ export function buildApp() {
 
     const sportController = new SportController(createSportUseCase, updateSportUseCase);
 
-    const lockerController = new LockerController(createLockerUseCase);
+    const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase);
 
     // Rutas Member
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -156,6 +158,7 @@ export function buildApp() {
 
     // Rutas Locker
     server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
+    server.put('/api/v1/lockers/:id', lockerController.update.bind(lockerController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
