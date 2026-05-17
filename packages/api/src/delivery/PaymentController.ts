@@ -3,12 +3,15 @@ import { CreatePaymentUseCase } from '../application/CreatePaymentUseCase.js';
 import { GetPaymentsUseCase } from '../application/GetPaymentsUseCase.js';
 import { UpdatePaymentUseCase } from '../application/UpdatePaymentUseCase.js';
 import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared';
+import { DeletePaymentUseCase } from '../application/DeletePaymentUseCase.js';
+import { CreatePaymentRequest } from '@alentapp/shared';
 
 export class PaymentController {
     constructor(
         private readonly createPaymentUseCase: CreatePaymentUseCase,
         private readonly getPaymentsUseCase: GetPaymentsUseCase,
         private readonly updatePaymentUseCase: UpdatePaymentUseCase
+        private readonly deletePaymentUseCase: DeletePaymentUseCase
     ) {}
 
     async getAll(request: FastifyRequest<{ Querystring: { member_id?: string } }>, reply: FastifyReply) {
@@ -52,6 +55,18 @@ export class PaymentController {
             }
             if (error.message.includes('no existe')) {
                 return reply.status(404).send({ error: error.message });
+            }
+    async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+        try {
+            const { id } = request.params;
+            await this.deletePaymentUseCase.execute(id);
+            return reply.status(204).send();
+        } catch (error: any) {
+            if (error.message.includes('no encontrado')) {
+                return reply.status(404).send({ error: error.message });
+            }
+            if (error.message.includes('cancelado previamente') || error.message.includes('ya procesado')) {
+                return reply.status(409).send({ error: error.message });
             }
             return reply.status(400).send({ error: error.message });
         }
