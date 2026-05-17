@@ -10,13 +10,9 @@ export class DisciplineValidator {
             throw new Error('La sanción debe tener un lapso de tiempo');
         }
 
-        const now = new Date();
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-        if (start < now) {
-            throw new Error('La fecha de inicio no puede ser en el pasado');
-        }
         if (end < start) {
             throw new Error('La fecha de inicio debe ser menor a la fecha de fin');
         }
