@@ -23,7 +23,7 @@ type DBDiscipline = {
 export class PostgresDisciplineRepository implements DisciplineRepository {
 
     async create(data: CreateDisciplineRequest): Promise<DisciplineDTO> {
-        const discipline = await this.prisma.discipline.create({
+        const discipline = await prisma.discipline.create({
             data: {
                 reason: data.reason,
                 start_date: new Date(data.start_date),
@@ -37,7 +37,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
     }
 
     async findById(id: string): Promise<DisciplineDTO | null> {
-        const discipline = await this.prisma.discipline.findUnique({
+        const discipline = await prisma.discipline.findUnique({
             where: { id },
         });
 
@@ -45,7 +45,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
     }
 
     async findAll(): Promise<DisciplineDTO[]> {
-        const discipline = await this.prisma.discipline.findMany({
+        const discipline = await prisma.discipline.findMany({
             orderBy: { start_date: 'asc' },
         });
 
@@ -53,7 +53,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
     }
 
     async findByMemberId(memberId: string): Promise<DisciplineDTO[]> {
-        const disciplines = await this.prisma.discipline.findMany({
+        const disciplines = await prisma.discipline.findMany({
             where: { member_id: memberId },
             orderBy: { start_date: 'asc' },
         });
@@ -62,7 +62,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
     }
 
     async update(id: string, data: UpdateDisciplineRequest): Promise<DisciplineDTO> {
-        const discipline = await this.prisma.discipline.update({
+        const discipline = await prisma.discipline.update({
             where: { id },
             data: {
                 ...(data.reason && { reason: data.reason }),
@@ -77,7 +77,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
     }
 
     async delete(id: string): Promise<void> {
-        await this.prisma.discipline.delete({
+        await prisma.discipline.delete({
             where: { id },
         });
     }
