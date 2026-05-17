@@ -64,7 +64,7 @@ export function buildApp() {
     // Repositorios
     const memberRepo = new PostgresMemberRepository();
     const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
-    const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
+    const certificateRepo = new PostgresMedicalCertificateRepository();
 
     const disciplineRepo = new PostgresDisciplineRepository();
     const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
