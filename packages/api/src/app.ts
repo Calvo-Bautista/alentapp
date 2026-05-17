@@ -67,7 +67,7 @@ export function buildApp() {
     const paymentRepo = new PostgresPaymentRepository();
     const certificateRepo = new PostgresMedicalCertificateRepository();
     const disciplineRepo = new PostgresDisciplineRepository();
-    const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
+    const sportRepo = new PostgresSportRepository();
     const lockerRepo = new PostgresLockerRepository();
 
     // Validadores
@@ -142,7 +142,7 @@ export function buildApp() {
     );
 
     const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase, getSportsUseCase);
-  
+
     const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase, deleteLockerUseCase, getLockersUseCase);
 
     // Rutas Member
