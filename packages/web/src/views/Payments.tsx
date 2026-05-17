@@ -248,12 +248,11 @@ export function PaymentsView() {
                         {monthsCollection.items.map((item) => (
                           <SelectItem item={item} key={item.value}>
                             {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </DialogRoot>
-                  </Field>
-
+                            </SelectItem>
+                            ))}
+                            </SelectContent>
+                            </SelectRoot>
+                            </Field>
                   <Field label="Año" required>
                     <SelectRoot 
                       collection={yearsCollection} 
