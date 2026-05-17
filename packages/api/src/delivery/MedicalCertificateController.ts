@@ -1,12 +1,14 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { GetMedicalCertificatesUseCase } from '../application/GetMedicalCertificatesUseCase.js';
 import { CreateMedicalCertificateUseCase } from '../application/NewMedicalCertificateUseCase.js';
+import { DeleteMedicalCertificateUseCase } from '../application/DeleteMedicalCertificateUseCase.js';
 import { CreateMedicalCertificateRequest, UpdateMedicalCertificateRequest } from '@alentapp/shared';
 import { UpdateMedicalCertificateUseCase } from '../application/UpdateMedicalCertificateUseCase.js';
 
 export class MedicalCertificateController {
     constructor(
         private readonly createCertificateUseCase: CreateMedicalCertificateUseCase,
+        private readonly deleteCertificateUseCase: DeleteMedicalCertificateUseCase,
         private readonly updateCertificateUseCase: UpdateMedicalCertificateUseCase,
         private readonly getCertificatesUseCase: GetMedicalCertificatesUseCase,
     ) {}
@@ -41,8 +43,8 @@ export class MedicalCertificateController {
             return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
         }
     }
-
-        async update(
+    
+    async update(
         request: FastifyRequest<{ Params: { id: string }; Body: UpdateMedicalCertificateRequest }>,
         reply: FastifyReply,
     ) {
@@ -59,7 +61,22 @@ export class MedicalCertificateController {
             }
             return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
         }
+    }  
+  
+    async delete(
+        request: FastifyRequest<{ Params: { id: string } }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = request.params;
+            await this.deleteCertificateUseCase.execute(id);
+            return reply.status(204).send();
+        } catch (error: any) {
+            if (error.message.includes('no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
+        }
     }
-
 
 }

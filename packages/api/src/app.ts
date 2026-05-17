@@ -10,15 +10,19 @@ import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
+import { UpdatePaymentUseCase } from './application/UpdatePaymentUseCase.js';
 import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
+// MedicalCertificate
 import { GetMedicalCertificatesUseCase } from './application/GetMedicalCertificatesUseCase.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
 import { UpdateMedicalCertificateUseCase } from './application/UpdateMedicalCertificateUseCase.js';
 import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
+import { DeleteMedicalCertificateUseCase } from './application/DeleteMedicalCertificateUseCase.js';
+
 import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
@@ -31,6 +35,7 @@ import { SportValidator } from './domain/services/SportValidator.js';
 import { CreateSportUseCase } from './application/CreateSportUseCase.js';
 import { UpdateSportUseCase } from './application/UpdateSportUseCase.js';
 import { DeleteSportUseCase } from './application/DeleteSportUseCase.js';
+import { GetSportsUseCase } from './application/GetSportsUseCase.js';
 import { SportController } from './delivery/SportController.js';
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
 import { LockerValidator } from './domain/services/LockerValidator.js';
@@ -62,18 +67,16 @@ export function buildApp() {
 
     // Repositorios
     const memberRepo = new PostgresMemberRepository();
-    const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
-    const certificateRepo = new PostgresMedicalCertificateRepository(memberRepo['prisma']);
-
+    const paymentRepo = new PostgresPaymentRepository();
+    const certificateRepo = new PostgresMedicalCertificateRepository();
     const disciplineRepo = new PostgresDisciplineRepository();
-    const sportRepo = new PostgresSportRepository(memberRepo['prisma']);
+    const sportRepo = new PostgresSportRepository();
     const lockerRepo = new PostgresLockerRepository();
 
     // Validadores
     const memberValidator = new MemberValidator(memberRepo);
     const paymentValidator = new PaymentValidator(memberRepo, paymentRepo);
     const certificateValidator = new MedicalCertificateValidator(memberRepo);
-
     const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
     const sportValidator = new SportValidator(sportRepo);
     const lockerValidator = new LockerValidator(lockerRepo, memberRepo);
@@ -84,10 +87,10 @@ export function buildApp() {
     const updateMemberUseCase = new UpdateMemberUseCase(memberRepo, memberValidator);
     const deleteMemberUseCase = new DeleteMemberUseCase(memberRepo);
 
-
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
+    const updatePaymentUseCase = new UpdatePaymentUseCase(paymentRepo);
     const deletePaymentUseCase = new DeletePaymentUseCase(paymentRepo);
 
     // Casos de Uso Discipline
@@ -96,11 +99,11 @@ export function buildApp() {
     const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
     const getDisciplineUseCase = new GetDisciplineUseCase(disciplineRepo);
 
-
     // Casos de Uso Sport
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
     const updateSportUseCase = new UpdateSportUseCase(sportRepo, sportValidator);
     const deleteSportUseCase = new DeleteSportUseCase(sportRepo);
+    const getSportsUseCase = new GetSportsUseCase(sportRepo);
 
     // Casos de Uso Locker
     const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
@@ -110,6 +113,7 @@ export function buildApp() {
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const deleteCertificateUseCase = new DeleteMedicalCertificateUseCase(certificateRepo);
     const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
     const getCertificatesUseCase = new GetMedicalCertificatesUseCase(certificateRepo);
 
@@ -121,18 +125,18 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
-    const paymentController = new PaymentController(createPaymentUseCase);
-
+    const paymentController = new PaymentController(
+        createPaymentUseCase,
+        getPaymentsUseCase,
+        updatePaymentUseCase,
+        deletePaymentUseCase
+    );
 
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
+        deleteCertificateUseCase,
         updateCertificateUseCase,
         getCertificatesUseCase
-    );
-
-    const disciplineController = new DisciplineController(
-        createDisciplineUseCase,
-        updateDisciplineUseCase,
     );
 
     const disciplineController = new DisciplineController(
@@ -142,13 +146,7 @@ export function buildApp() {
         getDisciplineUseCase,
     );
 
-    const paymentController = new PaymentController(
-        createPaymentUseCase,
-        getPaymentsUseCase,
-        deletePaymentUseCase
-    );
-
-    const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase);
+    const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase, getSportsUseCase);
 
     const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase, deleteLockerUseCase, getLockersUseCase);
 
@@ -161,6 +159,7 @@ export function buildApp() {
     // Rutas Payment
     server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.put('/api/v1/payments/:id', paymentController.update.bind(paymentController));
     server.delete('/api/v1/payments/:id/cancel', paymentController.delete.bind(paymentController));
 
     // TDD-0012: Intento de DELETE físico debe retornar 405
@@ -171,7 +170,9 @@ export function buildApp() {
     // Rutas MedicalCertificate
     server.get('/api/v1/medical-certificates/:memberId', medicalCertificateController.getByMember.bind(medicalCertificateController));
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
+    server.delete('/api/v1/medical-certificates/:id', medicalCertificateController.delete.bind(medicalCertificateController));
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
+  
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));

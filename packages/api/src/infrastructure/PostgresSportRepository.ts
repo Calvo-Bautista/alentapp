@@ -1,6 +1,15 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/index.js';
 import { SportRepository } from '../domain/SportRepository.js';
 import { SportDTO, UpdateSportRequest } from '@alentapp/shared';
+
+if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is not set');
+}
+
+const prisma = new PrismaClient({
+    adapter: new PrismaPg(process.env.DATABASE_URL),
+});
 
 type DBSport = {
     id: string;
@@ -12,10 +21,8 @@ type DBSport = {
 };
 
 export class PostgresSportRepository implements SportRepository {
-    constructor(private readonly prisma: PrismaClient) {}
-
     async create(data: Omit<SportDTO, 'id'>): Promise<SportDTO> {
-        const sport = await this.prisma.sport.create({
+        const sport = await prisma.sport.create({
             data: {
                 name: data.name,
                 description: data.description,
@@ -29,7 +36,7 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async findById(id: string): Promise<SportDTO | null> {
-        const sport = await this.prisma.sport.findUnique({
+        const sport = await prisma.sport.findUnique({
             where: { id },
         });
 
@@ -37,7 +44,7 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async findByName(name: string): Promise<SportDTO | null> {
-        const sport = await this.prisma.sport.findUnique({
+        const sport = await prisma.sport.findUnique({
             where: { name },
         });
 
@@ -45,7 +52,7 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async findAll(): Promise<SportDTO[]> {
-        const sports = await this.prisma.sport.findMany({
+        const sports = await prisma.sport.findMany({
             orderBy: { name: 'asc' },
         });
 
@@ -53,7 +60,7 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async update(id: string, data: UpdateSportRequest): Promise<SportDTO> {
-        const sport = await this.prisma.sport.update({
+        const sport = await prisma.sport.update({
             where: { id },
             data: {
                 ...(data.description !== undefined && { description: data.description }),
@@ -70,7 +77,7 @@ export class PostgresSportRepository implements SportRepository {
 
     async delete(id: string): Promise<void> {
         try {
-            await this.prisma.sport.delete({
+            await prisma.sport.delete({
                 where: { id },
             });
         } catch (error: any) {
