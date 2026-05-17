@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, Payment as PrismaPayment } from '../generated/client/index.js';
+import { PrismaClient, Payment as PrismaPayment } from '../generated/client/client.js';
 import { PaymentRepository } from '../domain/PaymentRepository.js';
 import { PaymentDTO, PaymentWithMemberDTO, UpdatePaymentRequest } from '@alentapp/shared';
 
@@ -8,7 +8,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 const prisma = new PrismaClient({
-    adapter: new PrismaPg(process.env.DATABASE_URL as any),
+    adapter: new PrismaPg(process.env.DATABASE_URL),
 });
 
 export class PostgresPaymentRepository implements PaymentRepository {
@@ -65,6 +65,8 @@ export class PostgresPaymentRepository implements PaymentRepository {
         });
 
         return this.mapToDTO(payment);
+    }
+
     async delete(id: string): Promise<void> {
         // Borrado lógico según TDD-0012
         await prisma.payment.update({
