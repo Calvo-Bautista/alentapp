@@ -157,3 +157,32 @@ export interface UpdateSportRequest {
   additional_price?: number;
   requires_medical_certificate?: boolean;
 }
+
+// ==========================================
+// Locker
+// ==========================================
+
+export type LockerStatus = 'Available' | 'Occupied' | 'Maintenance';
+
+export interface LockerDTO {
+  id: string;
+  number: number;
+  location: string;
+  status: LockerStatus;
+  member_id: string | null;
+  created_at: string; // ISO Date String
+}
+
+export interface CreateLockerRequest {
+  number: number;
+  location: string;
+  status?: LockerStatus;
+  member_id?: string | null;
+}
+
+export interface UpdateLockerRequest {
+  number?: number;
+  location?: string;
+  status?: LockerStatus;
+  member_id?: string | null;
+}
