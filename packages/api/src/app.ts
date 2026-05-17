@@ -134,9 +134,9 @@ export function buildApp() {
 
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
-        updateCertificateUseCase,
-        getCertificatesUseCase,
         deleteCertificateUseCase,
+        updateCertificateUseCase,
+        getCertificatesUseCase
     );
 
     const disciplineController = new DisciplineController(

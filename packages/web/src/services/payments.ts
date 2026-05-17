@@ -1,28 +1,10 @@
+import type { PaymentDTO, CreatePaymentRequest } from '@alentapp/shared';
+
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/v1';
-
-// Interfaces temporales (se reemplazarán por @alentapp/shared cuando la PR del backend sea aprobada)
-export interface PaymentDTO {
-  id: string;
-  amount: number;
-  month: number;
-  year: number;
-  status: 'Pending' | 'Paid' | 'Canceled';
-  due_date: string;
-  member_id: string;
-  payment_date: string | null;
-}
-
-export interface CreatePaymentRequest {
-  amount: number;
-  month: number;
-  year: number;
-  due_date: string;
-  member_id: string;
-}
 
 export const paymentsService = {
   async getAll(): Promise<PaymentDTO[]> {
-    const response = await fetch(`${API_URL}/pagos`);
+    const response = await fetch(`${API_URL}/payments`);
     if (!response.ok) {
       throw new Error('Error al obtener los pagos');
     }
@@ -31,7 +13,7 @@ export const paymentsService = {
   },
 
   async create(data: CreatePaymentRequest): Promise<PaymentDTO> {
-    const response = await fetch(`${API_URL}/pagos`, {
+    const response = await fetch(`${API_URL}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,6 +23,32 @@ export const paymentsService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Error al registrar el pago');
+    }
+    const result = await response.json();
+    return result.data;
+  },
+
+  async cancel(id: string): Promise<void> {
+    const response = await fetch(`${API_URL}/payments/${id}/cancel`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al cancelar el pago');
+    }
+  },
+
+  async update(id: string, data: Partial<PaymentDTO>): Promise<PaymentDTO> {
+    const response = await fetch(`${API_URL}/payments/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al actualizar el pago');
     }
     const result = await response.json();
     return result.data;
