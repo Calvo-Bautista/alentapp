@@ -93,4 +93,26 @@ export class PostgresMedicalCertificateRepository implements MedicalCertificateR
             created_at: cert.created_at.toISOString(),
         };
     }
+
+    async findById(id: string): Promise<MedicalCertificateDTO | null> {
+        const certificate = await this.prisma.medicalCertificate.findUnique({
+            where: { id },
+        });
+
+        return certificate ? this.mapToDTO(certificate) : null;
+    }
+
+    async delete(id: string): Promise<void> {
+        try {
+            await this.prisma.medicalCertificate.delete({
+                where: { id },
+            });
+        } catch (error: any) {
+            if (error.code === 'P2025') {
+                throw new Error('El certificado no existe');
+            }
+            throw error;
+        }
+    }
+
 }

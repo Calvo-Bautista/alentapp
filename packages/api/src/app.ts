@@ -14,12 +14,15 @@ import { UpdatePaymentUseCase } from './application/UpdatePaymentUseCase.js';
 import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PaymentController } from './delivery/PaymentController.js';
+// MedicalCertificate
 import { GetMedicalCertificatesUseCase } from './application/GetMedicalCertificatesUseCase.js';
 import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
 import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
 import { CreateMedicalCertificateUseCase } from './application/NewMedicalCertificateUseCase.js';
 import { UpdateMedicalCertificateUseCase } from './application/UpdateMedicalCertificateUseCase.js';
 import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
+import { DeleteMedicalCertificateUseCase } from './application/DeleteMedicalCertificateUseCase.js';
+
 import { DisciplineController } from './delivery/DisciplineController.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
@@ -86,7 +89,6 @@ export function buildApp() {
     const updateMemberUseCase = new UpdateMemberUseCase(memberRepo, memberValidator);
     const deleteMemberUseCase = new DeleteMemberUseCase(memberRepo);
 
-
     // Casos de Uso Payment
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo);
@@ -114,6 +116,7 @@ export function buildApp() {
 
     // Casos de Uso MedicalCertificate
     const createCertificateUseCase = new CreateMedicalCertificateUseCase(certificateRepo, certificateValidator);
+    const deleteCertificateUseCase = new DeleteMedicalCertificateUseCase(certificateRepo);
     const updateCertificateUseCase = new UpdateMedicalCertificateUseCase(certificateRepo, certificateValidator);
     const getCertificatesUseCase = new GetMedicalCertificatesUseCase(certificateRepo);
 
@@ -131,7 +134,8 @@ export function buildApp() {
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
         updateCertificateUseCase,
-        getCertificatesUseCase
+        getCertificatesUseCase,
+        deleteCertificateUseCase,
     );
 
     const disciplineController = new DisciplineController(
@@ -177,7 +181,9 @@ export function buildApp() {
     // Rutas MedicalCertificate
     server.get('/api/v1/medical-certificates/:memberId', medicalCertificateController.getByMember.bind(medicalCertificateController));
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
+    server.delete('/api/v1/medical-certificates/:id', medicalCertificateController.delete.bind(medicalCertificateController));
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
+  
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
