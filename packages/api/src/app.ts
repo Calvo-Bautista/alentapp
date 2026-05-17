@@ -31,6 +31,7 @@ import { SportValidator } from './domain/services/SportValidator.js';
 import { CreateSportUseCase } from './application/CreateSportUseCase.js';
 import { UpdateSportUseCase } from './application/UpdateSportUseCase.js';
 import { DeleteSportUseCase } from './application/DeleteSportUseCase.js';
+import { GetSportsUseCase } from './application/GetSportsUseCase.js';
 import { SportController } from './delivery/SportController.js';
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
 import { LockerValidator } from './domain/services/LockerValidator.js';
@@ -101,6 +102,7 @@ export function buildApp() {
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
     const updateSportUseCase = new UpdateSportUseCase(sportRepo, sportValidator);
     const deleteSportUseCase = new DeleteSportUseCase(sportRepo);
+    const getSportsUseCase = new GetSportsUseCase(sportRepo);
 
     // Casos de Uso Locker
     const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
@@ -148,8 +150,8 @@ export function buildApp() {
         deletePaymentUseCase
     );
 
-    const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase);
-
+    const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase, getSportsUseCase);
+  
     const lockerController = new LockerController(createLockerUseCase, updateLockerUseCase, deleteLockerUseCase, getLockersUseCase);
 
     // Rutas Member
