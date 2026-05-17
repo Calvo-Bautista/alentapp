@@ -37,4 +37,20 @@ export const paymentsService = {
       throw new Error(errorData.error || 'Error al cancelar el pago');
     }
   },
+
+  async update(id: string, data: Partial<PaymentDTO>): Promise<PaymentDTO> {
+    const response = await fetch(`${API_URL}/payments/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al actualizar el pago');
+    }
+    const result = await response.json();
+    return result.data;
+  },
 };

@@ -12,7 +12,7 @@ import {
   IconButton,
   Input
 } from "@chakra-ui/react";
-import { LuPlus, LuRefreshCw, LuTrash2 } from "react-icons/lu";
+import { LuPlus, LuRefreshCw, LuTrash2, LuDollarSign } from "react-icons/lu";
 import { useState, useEffect, useCallback } from "react";
 import { paymentsService } from "../services/payments";
 import { membersService } from "../services/members";
@@ -83,6 +83,26 @@ export function PaymentsView() {
     fetchPayments();
     fetchMembers();
   }, [fetchPayments, fetchMembers]);
+
+  const handlePayPayment = async (id: string) => {
+    if (!confirm("¿Desea marcar este pago como COBRADO?")) return;
+    
+    try {
+      await paymentsService.update(id, { status: 'Paid' });
+      toaster.create({
+        title: "Pago cobrado",
+        description: "Se ha registrado el cobro exitosamente.",
+        type: "success",
+      });
+      fetchPayments();
+    } catch (error: any) {
+      toaster.create({
+        title: "Error al cobrar",
+        description: error.message,
+        type: "error",
+      });
+    }
+  };
 
   const handleCancelPayment = async (id: string) => {
     if (!confirm("¿Está seguro que desea cancelar este pago?")) return;
@@ -231,7 +251,7 @@ export function PaymentsView() {
                           </SelectItem>
                         ))}
                       </SelectContent>
-                    </SelectRoot>
+                    </DialogRoot>
                   </Field>
 
                   <Field label="Año" required>
@@ -314,16 +334,28 @@ export function PaymentsView() {
                     {getStatusBadge(payment.status)}
                   </Table.Cell>
                   <Table.Cell textAlign="right">
-                    <IconButton
-                      aria-label="Cancelar pago"
-                      variant="ghost"
-                      colorPalette="red"
-                      size="sm"
-                      disabled={payment.status !== 'Pending'}
-                      onClick={() => handleCancelPayment(payment.id)}
-                    >
-                      <LuTrash2 />
-                    </IconButton>
+                    <HStack gap="2" justify="flex-end">
+                      <IconButton
+                        aria-label="Registrar cobro"
+                        variant="ghost"
+                        colorPalette="green"
+                        size="sm"
+                        disabled={payment.status !== 'Pending'}
+                        onClick={() => handlePayPayment(payment.id)}
+                      >
+                        <LuDollarSign />
+                      </IconButton>
+                      <IconButton
+                        aria-label="Cancelar pago"
+                        variant="ghost"
+                        colorPalette="red"
+                        size="sm"
+                        disabled={payment.status !== 'Pending'}
+                        onClick={() => handleCancelPayment(payment.id)}
+                      >
+                        <LuTrash2 />
+                      </IconButton>
+                    </HStack>
                   </Table.Cell>
                 </Table.Row>
               ))}
