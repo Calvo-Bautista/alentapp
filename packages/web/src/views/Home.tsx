@@ -1,5 +1,5 @@
 import { Box, SimpleGrid, Heading, Text, VStack } from "@chakra-ui/react";
-import { LuUsers } from "react-icons/lu";
+import { LuUsers, LuLockKeyhole } from "react-icons/lu";
 import { SectionCard } from "../components/SectionCard";
 
 export function HomeView() {
@@ -24,11 +24,18 @@ export function HomeView() {
       </VStack>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap="8">
-        <SectionCard 
+        <SectionCard
           title="Miembros"
           description="Administra el padrón de socios, sus categorías, estados de cuenta y datos personales."
           to="/members"
           icon={LuUsers}
+        />
+
+        <SectionCard
+          title="Casilleros"
+          description="Gestiona el inventario de casilleros, su estado y los socios asignados a cada uno."
+          to="/lockers"
+          icon={LuLockKeyhole}
         />
 
         {/* Future sections can be added here following the same pattern */}
