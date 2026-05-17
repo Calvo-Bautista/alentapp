@@ -38,7 +38,7 @@ export class PostgresMedicalCertificateRepository implements MedicalCertificateR
         return this.mapToDTO(certificate);
     }
 
-        async findById(id: string): Promise<MedicalCertificateDTO | null> {
+    async findById(id: string): Promise<MedicalCertificateDTO | null> {
         const certificate = await prisma.medicalCertificate.findUnique({
             where: { id },
         });
@@ -94,17 +94,9 @@ export class PostgresMedicalCertificateRepository implements MedicalCertificateR
         };
     }
 
-    async findById(id: string): Promise<MedicalCertificateDTO | null> {
-        const certificate = await this.prisma.medicalCertificate.findUnique({
-            where: { id },
-        });
-
-        return certificate ? this.mapToDTO(certificate) : null;
-    }
-
     async delete(id: string): Promise<void> {
         try {
-            await this.prisma.medicalCertificate.delete({
+            await prisma.medicalCertificate.delete({
                 where: { id },
             });
         } catch (error: any) {
