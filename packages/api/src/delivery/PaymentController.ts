@@ -1,6 +1,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreatePaymentUseCase } from '../application/CreatePaymentUseCase.js';
 import { GetPaymentsUseCase } from '../application/GetPaymentsUseCase.js';
+import { UpdatePaymentUseCase } from '../application/UpdatePaymentUseCase.js';
+import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared';
 import { DeletePaymentUseCase } from '../application/DeletePaymentUseCase.js';
 import { CreatePaymentRequest } from '@alentapp/shared';
 
@@ -8,6 +10,7 @@ export class PaymentController {
     constructor(
         private readonly createPaymentUseCase: CreatePaymentUseCase,
         private readonly getPaymentsUseCase: GetPaymentsUseCase,
+        private readonly updatePaymentUseCase: UpdatePaymentUseCase
         private readonly deletePaymentUseCase: DeletePaymentUseCase
     ) {}
 
@@ -38,6 +41,21 @@ export class PaymentController {
         }
     }
 
+    async update(
+        request: FastifyRequest<{ Params: { id: string }, Body: UpdatePaymentRequest }>, 
+        reply: FastifyReply
+    ) {
+        try {
+            const { id } = request.params;
+            const result = await this.updatePaymentUseCase.execute(id, request.body);
+            return reply.status(200).send({ data: result });
+        } catch (error: any) {
+            if (error.message.includes('anulados')) {
+                return reply.status(409).send({ error: error.message });
+            }
+            if (error.message.includes('no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
     async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
         try {
             const { id } = request.params;
