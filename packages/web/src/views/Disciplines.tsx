@@ -14,7 +14,7 @@ import {
     Input,
     Checkbox,
 } from "@chakra-ui/react";
-import { LuPlus, LuPencil, LuRefreshCw } from "react-icons/lu";
+import { LuPlus, LuPencil, LuTrash2, LuRefreshCw } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { disciplinesService } from "../services/disciplines";
 import { membersService } from "../services/members";
@@ -151,6 +151,22 @@ export function DisciplinesView() {
             alert(err.message || "Error al guardar la sanción");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (d: DisciplineDTO) => {
+        const memberName = getMemberName(d.member_id);
+        const warning = `¿Eliminar la sanción a ${memberName} (${d.start_date} → ${d.end_date})? Esta acción no se puede deshacer.`;
+
+        if (!window.confirm(warning)) {
+            return;
+        }
+
+        try {
+            await disciplinesService.delete(d.id);
+            if (selectedMemberId) fetchDisciplines(selectedMemberId);
+        } catch (err: any) {
+            alert(err.message || "Error al eliminar la sanción");
         }
     };
 
@@ -365,6 +381,15 @@ export function DisciplinesView() {
                                                     onClick={() => openEditModal(d)}
                                                 >
                                                     <LuPencil />
+                                                </IconButton>
+                                                <IconButton
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    colorPalette="red"
+                                                    aria-label="Eliminar sanción"
+                                                    onClick={() => handleDelete(d)}
+                                                >
+                                                    <LuTrash2 />
                                                 </IconButton>
                                             </HStack>
                                         </Table.Cell>
