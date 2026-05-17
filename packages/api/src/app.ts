@@ -67,9 +67,8 @@ export function buildApp() {
 
     // Repositorios
     const memberRepo = new PostgresMemberRepository();
-    const paymentRepo = new PostgresPaymentRepository(memberRepo['prisma']); // Usamos la misma instancia de prisma
+    const paymentRepo = new PostgresPaymentRepository();
     const certificateRepo = new PostgresMedicalCertificateRepository();
-
     const disciplineRepo = new PostgresDisciplineRepository();
     const sportRepo = new PostgresSportRepository();
     const lockerRepo = new PostgresLockerRepository();
@@ -78,7 +77,6 @@ export function buildApp() {
     const memberValidator = new MemberValidator(memberRepo);
     const paymentValidator = new PaymentValidator(memberRepo, paymentRepo);
     const certificateValidator = new MedicalCertificateValidator(memberRepo);
-
     const disciplineValidator = new DisciplineValidator(disciplineRepo, memberRepo);
     const sportValidator = new SportValidator(sportRepo);
     const lockerValidator = new LockerValidator(lockerRepo, memberRepo);
@@ -100,7 +98,6 @@ export function buildApp() {
     const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
     const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
     const getDisciplineUseCase = new GetDisciplineUseCase(disciplineRepo);
-
 
     // Casos de Uso Sport
     const createSportUseCase = new CreateSportUseCase(sportRepo, sportValidator);
@@ -128,8 +125,12 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
-    const paymentController = new PaymentController(createPaymentUseCase);
-
+    const paymentController = new PaymentController(
+        createPaymentUseCase,
+        getPaymentsUseCase,
+        updatePaymentUseCase,
+        deletePaymentUseCase
+    );
 
     const medicalCertificateController = new MedicalCertificateController(
         createCertificateUseCase,
@@ -141,20 +142,8 @@ export function buildApp() {
     const disciplineController = new DisciplineController(
         createDisciplineUseCase,
         updateDisciplineUseCase,
-    );
-
-    const disciplineController = new DisciplineController(
-        createDisciplineUseCase,
-        updateDisciplineUseCase,
         deleteDisciplineUseCase,
         getDisciplineUseCase,
-    );
-
-    const paymentController = new PaymentController(
-        createPaymentUseCase,
-        getPaymentsUseCase,
-        updatePaymentUseCase
-        deletePaymentUseCase
     );
 
     const sportController = new SportController(createSportUseCase, updateSportUseCase, deleteSportUseCase, getSportsUseCase);
