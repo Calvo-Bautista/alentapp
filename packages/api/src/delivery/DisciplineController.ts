@@ -24,7 +24,12 @@ export class DisciplineController {
             if (error.message.includes('Ya existe una sancion con ese ID')) {
                 return reply.status(409).send({ error: error.message });
             }
-            if (error.message.includes('No existe ese socio en el club') || error.message.includes('inválido')) {
+            if (
+                error.message.includes('No existe ese socio en el club')
+                || error.message.includes('inválido')
+                || error.message.includes('lapso de tiempo')
+                || error.message.includes('menor a la fecha de fin')
+            ) {
                 return reply.status(400).send({ error: error.message });
             }
             return reply.status(500).send({ error: "Error interno, reintente más tarde" });
@@ -43,7 +48,12 @@ export class DisciplineController {
                 if (error.message.includes('Ya existe una sancion con ese ID')) {
                     return reply.status(409).send({ error: error.message });
                 }
-                if (error.message.includes('inválido') || error.message.includes('no existe')) {
+                if (
+                    error.message.includes('inválido')
+                    || error.message.includes('no existe')
+                    || error.message.includes('lapso de tiempo')
+                    || error.message.includes('menor a la fecha de fin')
+                ) {
                     return reply.status(400).send({ error: error.message });
                 }
                 return reply.status(500).send({ error: "Error interno, reintente más tarde" });
