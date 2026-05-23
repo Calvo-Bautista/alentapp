@@ -59,4 +59,35 @@ describe('CreateLockerUseCase', () => {
         expect(result.id).toBe('locker-1');
         expect(result.status).toBe('Available');
     });
+
+    it('debe deducir status Occupied cuando se asigna un socio sin enviar status explícito', async () => {
+        const mockRequest: CreateLockerRequest = {
+            number: 7,
+            location: 'Vestuario B',
+            member_id: 'member-123',
+        };
+
+        vi.mocked(mockLockerRepo.create).mockResolvedValueOnce({
+            id: 'locker-2',
+            number: 7,
+            location: 'Vestuario B',
+            status: 'Occupied',
+            member_id: 'member-123',
+            created_at: '2026-05-23T00:00:00.000Z',
+        });
+
+        const result = await useCase.execute(mockRequest);
+
+        // Como se envió member_id, debe validar que exista
+        expect(mockLockerValidator.validateMemberExists).toHaveBeenCalledWith('member-123');
+
+        // El UseCase debe deducir Occupied (TDD-0007: status deducido cuando no viene explícito)
+        expect(mockLockerValidator.validateStatusMemberCombination).toHaveBeenCalledWith('Occupied', 'member-123');
+        expect(mockLockerRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+            status: 'Occupied',
+            member_id: 'member-123',
+        }));
+
+        expect(result.status).toBe('Occupied');
+    });
 });
