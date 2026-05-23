@@ -74,4 +74,16 @@ describe('UpdateLockerUseCase', () => {
         // No debe persistir nada (TDD-0008)
         expect(mockLockerRepo.update).not.toHaveBeenCalled();
     });
+
+    it('debe lanzar error si el casillero a actualizar no existe', async () => {
+        vi.mocked(mockLockerRepo.findById).mockResolvedValueOnce(null);
+
+        await expect(
+            useCase.execute('locker-inexistente', { location: 'Vestuario X' }),
+        ).rejects.toThrow('El casillero no existe');
+
+        // Ni siquiera debe validar ni persistir
+        expect(mockLockerValidator.validateNumber).not.toHaveBeenCalled();
+        expect(mockLockerRepo.update).not.toHaveBeenCalled();
+    });
 });
