@@ -132,5 +132,24 @@ describe('Locker API Integration Tests', () => {
             expect(body.data.number).toBe(99);
             expect(body.data.status).toBe('Available');
         });
+
+        it('debe atravesar la validación y retornar 409 si el número ya está registrado', async () => {
+            const payload: CreateLockerRequest = {
+                number: 1, // Este número ya existe según nuestro mock
+                location: 'Vestuario duplicado',
+                status: 'Available',
+                member_id: null,
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/lockers',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(409);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Ya existe un casillero con ese número');
+        });
     });
 });
