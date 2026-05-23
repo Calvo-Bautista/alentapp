@@ -171,4 +171,21 @@ describe('Locker API Integration Tests', () => {
             expect(body.error).toBe('El número de casillero debe ser un entero positivo');
         });
     });
+
+    describe('PUT /api/v1/lockers/:id', () => {
+        it('debe retornar 200 y los datos actualizados al editar un casillero existente', async () => {
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/lockers/locker-1',
+                payload: {
+                    location: 'Vestuario A - Pasillo Renovado',
+                },
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('locker-1');
+            expect(body.data.location).toBe('Vestuario A - Pasillo Renovado');
+        });
+    });
 });
