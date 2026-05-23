@@ -84,4 +84,20 @@ describe('Locker API End-to-End Tests', () => {
         const dbLocker = await prisma.locker.findUnique({ where: { id: createdLockerId } });
         expect(dbLocker?.location).toBe('Vestuario E2E - Pasillo Renovado');
     });
+
+    it('3. DELETE: debe eliminar físicamente el casillero de la DB (TDD-0009 hard delete)', async () => {
+        const response = await app.inject({
+            method: 'DELETE',
+            url: `/api/v1/lockers/${createdLockerId}`,
+        });
+
+        expect(response.statusCode).toBe(204);
+
+        // Verificar que Prisma ya no lo encuentra en la DB real
+        const dbLocker = await prisma.locker.findUnique({ where: { id: createdLockerId } });
+        expect(dbLocker).toBeNull();
+
+        // Anular variable para que afterAll no intente borrarlo nuevamente
+        createdLockerId = '';
+    });
 });
