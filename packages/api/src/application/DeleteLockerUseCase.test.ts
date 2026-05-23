@@ -33,4 +33,13 @@ describe('DeleteLockerUseCase', () => {
         expect(mockLockerRepo.findById).toHaveBeenCalledWith('locker-1');
         expect(mockLockerRepo.delete).toHaveBeenCalledWith('locker-1');
     });
+
+    it('debe lanzar error y no eliminar nada si el casillero no existe', async () => {
+        vi.mocked(mockLockerRepo.findById).mockResolvedValueOnce(null);
+
+        await expect(useCase.execute('locker-inexistente')).rejects.toThrow('El casillero no existe');
+
+        // No debe intentar borrar (TDD-0009: validar existencia antes de eliminar)
+        expect(mockLockerRepo.delete).not.toHaveBeenCalled();
+    });
 });
