@@ -188,4 +188,16 @@ describe('Locker API Integration Tests', () => {
             expect(body.data.location).toBe('Vestuario A - Pasillo Renovado');
         });
     });
+
+    describe('DELETE /api/v1/lockers/:id', () => {
+        it('debe retornar 204 sin cuerpo si la eliminación es exitosa', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/lockers/locker-1',
+            });
+
+            expect(response.statusCode).toBe(204);
+            expect(response.payload).toBe('');
+        });
+    });
 });
