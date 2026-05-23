@@ -151,5 +151,24 @@ describe('Locker API Integration Tests', () => {
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('Ya existe un casillero con ese número');
         });
+
+        it('debe retornar 400 si el número de casillero es 0 o negativo', async () => {
+            const payload: CreateLockerRequest = {
+                number: -5,
+                location: 'Vestuario inválido',
+                status: 'Available',
+                member_id: null,
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/lockers',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El número de casillero debe ser un entero positivo');
+        });
     });
 });
