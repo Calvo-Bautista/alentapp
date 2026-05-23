@@ -110,4 +110,27 @@ describe('Locker API Integration Tests', () => {
             expect(body.data[0].number).toBe(1);
         });
     });
+
+    describe('POST /api/v1/lockers', () => {
+        it('debe retornar 201 y crear el casillero atravesando todas las capas', async () => {
+            const payload: CreateLockerRequest = {
+                number: 99,
+                location: 'Vestuario C',
+                status: 'Available',
+                member_id: null,
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/lockers',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(201);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('locker-new');
+            expect(body.data.number).toBe(99);
+            expect(body.data.status).toBe('Available');
+        });
+    });
 });
