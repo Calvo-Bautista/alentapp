@@ -56,4 +56,22 @@ describe('UpdateLockerUseCase', () => {
         expect(result.status).toBe('Occupied');
         expect(result.member_id).toBe('member-99');
     });
+
+    it('debe rechazar el cambio a Maintenance si el casillero todavía tiene un socio asignado', async () => {
+        // El casillero existente está Occupied con socio
+        const occupiedLocker: LockerDTO = {
+            ...existingLocker,
+            status: 'Occupied',
+            member_id: 'member-42',
+        };
+        vi.mocked(mockLockerRepo.findById).mockResolvedValueOnce(occupiedLocker);
+
+        // Se intenta pasar a Maintenance sin desasignar al socio en el mismo request
+        await expect(
+            useCase.execute('locker-1', { status: 'Maintenance' }),
+        ).rejects.toThrow('Hay que desasignar al socio antes de pasar el casillero a mantenimiento');
+
+        // No debe persistir nada (TDD-0008)
+        expect(mockLockerRepo.update).not.toHaveBeenCalled();
+    });
 });
