@@ -90,4 +90,24 @@ describe('CreateLockerUseCase', () => {
 
         expect(result.status).toBe('Occupied');
     });
+
+    it('debe propagar el error del validador y no persistir si el número es inválido', async () => {
+        const mockRequest: CreateLockerRequest = {
+            number: -1,
+            location: 'Vestuario C',
+        };
+
+        // El validador rechaza el número antes de tocar el repositorio
+        vi.mocked(mockLockerValidator.validateNumber).mockImplementationOnce(() => {
+            throw new Error('El número de casillero debe ser un entero positivo');
+        });
+
+        await expect(useCase.execute(mockRequest)).rejects.toThrow(
+            'El número de casillero debe ser un entero positivo',
+        );
+
+        // No debe avanzar a las siguientes validaciones ni persistir
+        expect(mockLockerValidator.validateNumberIsUnique).not.toHaveBeenCalled();
+        expect(mockLockerRepo.create).not.toHaveBeenCalled();
+    });
 });
