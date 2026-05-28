@@ -9,7 +9,7 @@ describe("DisciplineValidator", ()=>{
     } as unknown as DisciplineRepository;
 
     const mockMemberRepo = {
-        
+        findById: vi.fn(),
     } as unknown as MemberRepository;
 
     const validator = new DisciplineValidator(mockDisciplineRepo, mockMemberRepo);
@@ -35,16 +35,29 @@ describe("DisciplineValidator", ()=>{
         })
 
         it('debe lanzar error si falta la fecha de inicio', () => {
-            expect(() => validator.validateDates('', '2022-01-02'))
-                .toThrow('La sancion debe tener un lapso de tiempo');
+            expect(() => validator.validateDates('', '2022-01-02')).toThrow('La sancion debe tener un lapso de tiempo');
         });
 
         it('debe lanzar error si falta la fecha de fin', () => {
-            expect(() => validator.validateDates('2022-01-01', ''))
-                .toThrow('La sancion debe tener un lapso de tiempo');
+            expect(() => validator.validateDates('2022-01-01', '')).toThrow('La sancion debe tener un lapso de tiempo');
         });
     })
 
+    describe('validateMemberExists', () => {
+        it('debe pasar si el socio existe', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce({ id: 'member-1' } as any);
+
+            await expect(validator.validateMemberExists('member-1')).resolves.not.toThrow();
+            expect(mockMemberRepo.findById).toHaveBeenCalledWith('member-1');
+        });
+
+        it('debe lanzar error si el socio no existe', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce(null);
+
+            await expect(validator.validateMemberExists('member-404')).rejects.toThrow('No existe ese socio en el club');
+            expect(mockMemberRepo.findById).toHaveBeenCalledWith('member-404');
+        });
+    });
     
 })
 
