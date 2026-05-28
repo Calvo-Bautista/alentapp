@@ -18,6 +18,18 @@ describe("DisciplineValidator", ()=>{
         vi.clearAllMocks();
     });
 
+    describe("validateDates",()=>{
+        it("debe pasar correctamente si la fecha inicio es menor a la fecha fin", () => {
+            expect(() => validator.validateDates('2022-01-01', '2022-01-02')).not.toThrow();
+            expect(() => validator.validateDates('2021-05-27', '2022-01-02')).not.toThrow();
+        });
+
+        it("debe lanzar un error si la fecha inicio es mayor a la fecha fin", () => {
+            expect(() => validator.validateDates('2022-01-02', '2022-01-01')).toThrow('La fecha de inicio debe ser menor a la fecha de fin');
+            expect(() => validator.validateDates('2022-05-27', '2021-10-29')).toThrow('La fecha de inicio debe ser menor a la fecha de fin');
+        })
+    })
+
     
 })
 
