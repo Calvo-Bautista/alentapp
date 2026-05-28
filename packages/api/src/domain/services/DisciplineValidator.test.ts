@@ -28,6 +28,21 @@ describe("DisciplineValidator", ()=>{
             expect(() => validator.validateDates('2022-01-02', '2022-01-01')).toThrow('La fecha de inicio debe ser menor a la fecha de fin');
             expect(() => validator.validateDates('2022-05-27', '2021-10-29')).toThrow('La fecha de inicio debe ser menor a la fecha de fin');
         })
+
+        it("debe pasar correctamente si la fecha inicio es igual a la fecha fin", ()=> {
+            expect(() => validator.validateDates('2022-01-01', '2022-01-01')).not.toThrow();
+            expect(() => validator.validateDates('2025-08-22', '2025-08-22')).not.toThrow();
+        })
+
+        it('debe lanzar error si falta la fecha de inicio', () => {
+            expect(() => validator.validateDates('', '2022-01-02'))
+                .toThrow('La sancion debe tener un lapso de tiempo');
+        });
+
+        it('debe lanzar error si falta la fecha de fin', () => {
+            expect(() => validator.validateDates('2022-01-01', ''))
+                .toThrow('La sancion debe tener un lapso de tiempo');
+        });
     })
 
     
