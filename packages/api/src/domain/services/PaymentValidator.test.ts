@@ -44,5 +44,10 @@ describe('PaymentValidator', () => {
             const currentYear = new Date().getFullYear();
             expect(() => validator.validateInvariants(1000, 5, currentYear + 2)).toThrow('El año indicado no es válido');
         });
+
+        it('7. debe pasar si los datos son válidos', () => {
+            const currentYear = new Date().getFullYear();
+            expect(() => validator.validateInvariants(1500.50, 12, currentYear)).not.toThrow();
+        });
     });
 });
