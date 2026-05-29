@@ -56,5 +56,10 @@ describe('PaymentValidator', () => {
             vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce({ id: 'member-1', name: 'Juan' } as any);
             await expect(validator.validateMemberExists('member-1')).resolves.not.toThrow();
         });
+
+        it('9. debe lanzar error si el socio no existe', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce(null);
+            await expect(validator.validateMemberExists('non-existent')).rejects.toThrow('El socio indicado no existe');
+        });
     });
 });
