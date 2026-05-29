@@ -22,5 +22,9 @@ describe('PaymentValidator', () => {
         it('1. debe lanzar error si el monto es 0', () => {
             expect(() => validator.validateInvariants(0, 5, 2026)).toThrow('El monto del pago debe ser mayor a 0 (cero)');
         });
+
+        it('2. debe lanzar error si el monto es negativo', () => {
+            expect(() => validator.validateInvariants(-100, 5, 2026)).toThrow('El monto del pago debe ser mayor a 0 (cero)');
+        });
     });
 });
