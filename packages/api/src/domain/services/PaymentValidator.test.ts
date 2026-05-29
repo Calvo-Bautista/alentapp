@@ -74,5 +74,15 @@ describe('PaymentValidator', () => {
             await expect(validator.validateNewPayment('member-1', 5, 2026, 1000))
                 .rejects.toThrow('El socio ya tiene un pago de $1000 registrado para el período 5/2026');
         });
+
+        it('11. debe pasar si existe un pago idéntico pero está cancelado', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce({ id: 'member-1' } as any);
+            vi.mocked(mockPaymentRepo.findByMemberMonthYearAndAmount).mockResolvedValueOnce({ 
+                id: 'pay-1', 
+                status: 'Canceled' 
+            } as any);
+
+            await expect(validator.validateNewPayment('member-1', 5, 2026, 1000)).resolves.not.toThrow();
+        });
     });
 });
