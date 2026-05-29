@@ -5,8 +5,9 @@ import { DisciplineDTO } from '@alentapp/shared';
 
 describe('DeleteDisciplineUseCase', () => {
     const mockDisciplineRepo = {
-
-    } as unknown as DeleteDisciplineUseCase;
+        findById: vi.fn(),
+        delete: vi.fn(),
+    } as unknown as DisciplineRepository;
 
     const useCase = new DeleteDisciplineUseCase(mockDisciplineRepo);
 
@@ -23,5 +24,13 @@ describe('DeleteDisciplineUseCase', () => {
         vi.clearAllMocks();
     });
 
-    
-});
+    it('debe eliminar la sanción si existe', async () => {
+        vi.mocked(mockDisciplineRepo.findById).mockResolvedValueOnce(existingDiscipline);
+        vi.mocked(mockDisciplineRepo.delete).mockResolvedValueOnce(undefined);
+
+        await expect(useCase.execute("1")).resolves.toBeUndefined();
+
+        expect(mockDisciplineRepo.findById).toHaveBeenCalledWith("1");
+        expect(mockDisciplineRepo.delete).toHaveBeenCalledWith("1");
+    })
+})
