@@ -30,5 +30,9 @@ describe('PaymentValidator', () => {
         it('3. debe lanzar error si el mes es menor a 1', () => {
             expect(() => validator.validateInvariants(1000, 0, 2026)).toThrow('El mes indicado no es válido');
         });
+
+        it('4. debe lanzar error si el mes es mayor a 12', () => {
+            expect(() => validator.validateInvariants(1000, 13, 2026)).toThrow('El mes indicado no es válido');
+        });
     });
 });
