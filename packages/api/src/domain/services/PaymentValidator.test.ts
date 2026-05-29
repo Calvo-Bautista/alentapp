@@ -50,4 +50,11 @@ describe('PaymentValidator', () => {
             expect(() => validator.validateInvariants(1500.50, 12, currentYear)).not.toThrow();
         });
     });
+
+    describe('validateMemberExists', () => {
+        it('8. debe pasar si el socio existe', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce({ id: 'member-1', name: 'Juan' } as any);
+            await expect(validator.validateMemberExists('member-1')).resolves.not.toThrow();
+        });
+    });
 });
