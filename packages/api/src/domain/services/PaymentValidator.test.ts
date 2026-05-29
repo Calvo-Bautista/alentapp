@@ -84,5 +84,12 @@ describe('PaymentValidator', () => {
 
             await expect(validator.validateNewPayment('member-1', 5, 2026, 1000)).resolves.not.toThrow();
         });
+
+        it('12. debe pasar si no existe un pago previo para ese período', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce({ id: 'member-1' } as any);
+            vi.mocked(mockPaymentRepo.findByMemberMonthYearAndAmount).mockResolvedValueOnce(null);
+
+            await expect(validator.validateNewPayment('member-1', 5, 2026, 1000)).resolves.not.toThrow();
+        });
     });
 });
