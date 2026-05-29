@@ -39,5 +39,10 @@ describe('PaymentValidator', () => {
             const currentYear = new Date().getFullYear();
             expect(() => validator.validateInvariants(1000, 5, currentYear - 6)).toThrow('El año indicado no es válido');
         });
+
+        it('6. debe lanzar error si el año es muy a futuro', () => {
+            const currentYear = new Date().getFullYear();
+            expect(() => validator.validateInvariants(1000, 5, currentYear + 2)).toThrow('El año indicado no es válido');
+        });
     });
 });
