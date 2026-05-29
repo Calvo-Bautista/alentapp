@@ -32,5 +32,13 @@ describe('DeleteDisciplineUseCase', () => {
 
         expect(mockDisciplineRepo.findById).toHaveBeenCalledWith("1");
         expect(mockDisciplineRepo.delete).toHaveBeenCalledWith("1");
-    })
+    });
+
+    it('debe lanzar error y no eliminar nada si la sanción no existe', async () => {
+        vi.mocked(mockDisciplineRepo.findById).mockResolvedValueOnce(null);
+
+        await expect(useCase.execute('sancion-inexistente')).rejects.toThrow('La sanción no existe');
+
+        expect(mockDisciplineRepo.delete).not.toHaveBeenCalled();
+    });
 })
