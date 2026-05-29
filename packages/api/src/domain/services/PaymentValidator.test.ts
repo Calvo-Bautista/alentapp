@@ -34,5 +34,10 @@ describe('PaymentValidator', () => {
         it('4. debe lanzar error si el mes es mayor a 12', () => {
             expect(() => validator.validateInvariants(1000, 13, 2026)).toThrow('El mes indicado no es válido');
         });
+
+        it('5. debe lanzar error si el año es muy antiguo', () => {
+            const currentYear = new Date().getFullYear();
+            expect(() => validator.validateInvariants(1000, 5, currentYear - 6)).toThrow('El año indicado no es válido');
+        });
     });
 });
