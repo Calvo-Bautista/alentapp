@@ -62,4 +62,17 @@ describe('PaymentValidator', () => {
             await expect(validator.validateMemberExists('non-existent')).rejects.toThrow('El socio indicado no existe');
         });
     });
+
+    describe('validateNewPayment', () => {
+        it('10. debe lanzar error si ya existe un pago idéntico activo', async () => {
+            vi.mocked(mockMemberRepo.findById).mockResolvedValueOnce({ id: 'member-1' } as any);
+            vi.mocked(mockPaymentRepo.findByMemberMonthYearAndAmount).mockResolvedValueOnce({ 
+                id: 'pay-1', 
+                status: 'Pending' 
+            } as any);
+
+            await expect(validator.validateNewPayment('member-1', 5, 2026, 1000))
+                .rejects.toThrow('El socio ya tiene un pago de $1000 registrado para el período 5/2026');
+        });
+    });
 });
