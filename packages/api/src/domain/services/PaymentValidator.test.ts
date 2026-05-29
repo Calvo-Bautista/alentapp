@@ -26,5 +26,9 @@ describe('PaymentValidator', () => {
         it('2. debe lanzar error si el monto es negativo', () => {
             expect(() => validator.validateInvariants(-100, 5, 2026)).toThrow('El monto del pago debe ser mayor a 0 (cero)');
         });
+
+        it('3. debe lanzar error si el mes es menor a 1', () => {
+            expect(() => validator.validateInvariants(1000, 0, 2026)).toThrow('El mes indicado no es válido');
+        });
     });
 });
