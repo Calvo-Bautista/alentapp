@@ -59,5 +59,15 @@ describe('CreateDisciplineUseCase', () => {
         expect(mockDisciplineRepo.create).not.toHaveBeenCalled();
     });
 
-    
+    it('debe lanzar un error si el socio no existe y no persistir nada', async () => {
+        const errorMsg = 'No existe ese socio en el club';
+        vi.mocked(mockDisciplineValidator.validateDates).mockReturnValue(undefined);
+        vi.mocked(mockDisciplineValidator.validateMemberExists).mockRejectedValueOnce(new Error(errorMsg));
+
+        await expect(useCase.execute(mockRequest)).rejects.toThrow(errorMsg);
+
+        expect(mockDisciplineValidator.validateDates).toHaveBeenCalledWith(mockRequest.start_date, mockRequest.end_date);
+        expect(mockDisciplineValidator.validateMemberExists).toHaveBeenCalledWith(mockRequest.member_id);
+        expect(mockDisciplineRepo.create).not.toHaveBeenCalled();
+    });
 });
