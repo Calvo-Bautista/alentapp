@@ -46,5 +46,18 @@ describe('CreateDisciplineUseCase', () => {
         expect(result).toEqual(mockResponse);
     });
 
+    it('debe lanzar un error si las fechas son inválidas y no persistir nada', async () => {
+        const errorMsg = 'La fecha de inicio debe ser menor a la fecha de fin';
+        vi.mocked(mockDisciplineValidator.validateDates).mockImplementationOnce(() => {
+            throw new Error(errorMsg);
+        });
+
+        await expect(useCase.execute(mockRequest)).rejects.toThrow(errorMsg);
+
+        expect(mockDisciplineValidator.validateDates).toHaveBeenCalledWith(mockRequest.start_date, mockRequest.end_date);
+        expect(mockDisciplineValidator.validateMemberExists).not.toHaveBeenCalled();
+        expect(mockDisciplineRepo.create).not.toHaveBeenCalled();
+    });
+
     
 });
