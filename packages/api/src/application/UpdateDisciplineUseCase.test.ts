@@ -12,6 +12,7 @@ describe('UpdateDisciplineUseCase', () => {
 
     const mockDisciplineValidator = {
         validateMemberExists: vi.fn(),
+        validateDates: vi.fn(),
     } as unknown as DisciplineValidator;
 
     const useCase = new UpdateDisciplineUseCase(mockDisciplineRepo, mockDisciplineValidator);
@@ -39,6 +40,17 @@ describe('UpdateDisciplineUseCase', () => {
 
         expect(mockDisciplineValidator.validateMemberExists).toHaveBeenCalledWith('socio-no-existe');
         expect(mockDisciplineRepo.update).not.toHaveBeenCalled();
+    });
+
+    it('debe validar las fechas si start_date cambia y es diferente', async () => {
+        const updateData: UpdateDisciplineRequest = { start_date: '2026-05-06' };
+        vi.mocked(mockDisciplineValidator.validateDates).mockReturnValueOnce(undefined);
+        vi.mocked(mockDisciplineRepo.update).mockResolvedValueOnce({ ...mockExistingDiscipline, ...updateData });
+
+        await useCase.execute('sancion-1', updateData);
+
+        expect(mockDisciplineValidator.validateDates).toHaveBeenCalledWith('2026-05-06', mockExistingDiscipline.end_date);
+        expect(mockDisciplineRepo.update).toHaveBeenCalledWith('sancion-1', updateData);
     });
 
     
