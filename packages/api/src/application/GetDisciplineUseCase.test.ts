@@ -13,5 +13,12 @@ describe('GetDisciplineUseCase', () => {
         vi.clearAllMocks();
     });
 
-    
+    it('debe retornar la lista de sanciones', async () => {
+        const mockDiscipline = [{ id: '1', name: 'A' }, { id: '2', name: 'B' }];
+        vi.mocked(mockDisciplineRepo.findAll).mockResolvedValueOnce(mockDiscipline as any);
+        
+        const result = await useCase.getAll();
+        expect(result).toEqual(mockDiscipline);
+        expect(mockDisciplineRepo.findAll).toHaveBeenCalledOnce();
+    });
 });
