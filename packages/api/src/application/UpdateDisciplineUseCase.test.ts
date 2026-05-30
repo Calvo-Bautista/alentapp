@@ -30,6 +30,17 @@ describe('UpdateDisciplineUseCase', () => {
         vi.mocked(mockDisciplineRepo.findById).mockResolvedValue(mockExistingDiscipline);
     });
 
+    it('debe lanzar error y no actualizar si la validación del nuevo socio falla', async () => {
+        const updateData: UpdateDisciplineRequest = { member_id: 'socio-no-existe' };
+        const errorMsg = 'No existe ese socio en el club';
+        vi.mocked(mockDisciplineValidator.validateMemberExists).mockRejectedValueOnce(new Error(errorMsg));
+
+        await expect(useCase.execute('sancion-1', updateData)).rejects.toThrow(errorMsg);
+
+        expect(mockDisciplineValidator.validateMemberExists).toHaveBeenCalledWith('socio-no-existe');
+        expect(mockDisciplineRepo.update).not.toHaveBeenCalled();
+    });
+
     
 
 });
