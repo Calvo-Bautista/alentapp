@@ -7,6 +7,7 @@ describe('GetDisciplineUseCase', () => {
     const mockDisciplineRepo = {
         findAll: vi.fn(),
         findById: vi.fn(),
+        findByMemberId: vi.fn(),
     } as unknown as DisciplineRepository;
 
     const useCase = new GetDisciplineUseCase(mockDisciplineRepo);
@@ -48,4 +49,16 @@ describe('GetDisciplineUseCase', () => {
 
         await expect(useCase.getById("999")).rejects.toThrow('La sanción no existe');
     });
+
+    it('debe retornar las sanciones de un socio', async () => {
+        const mockDisciplines = [existingDiscipline];
+        vi.mocked(mockDisciplineRepo.findByMemberId).mockResolvedValueOnce(mockDisciplines);
+
+        const result = await useCase.getByMemberId("1");
+
+        expect(result).toEqual(mockDisciplines);
+        expect(mockDisciplineRepo.findByMemberId).toHaveBeenCalledWith("1");
+    });
+
+    
 });
