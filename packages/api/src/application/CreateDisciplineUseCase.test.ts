@@ -29,5 +29,22 @@ describe('CreateDisciplineUseCase', () => {
         ...mockRequest
     };
 
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('debe crear una sanción exitosamente si pasa las validaciones de negocio', async () => {
+        vi.mocked(mockDisciplineValidator.validateDates).mockReturnValue(undefined);
+        vi.mocked(mockDisciplineValidator.validateMemberExists).mockResolvedValue(undefined);
+        vi.mocked(mockDisciplineRepo.create).mockResolvedValueOnce(mockResponse);
+
+        const result = await useCase.execute(mockRequest);
+
+        expect(mockDisciplineValidator.validateDates).toHaveBeenCalledWith(mockRequest.start_date, mockRequest.end_date);
+        expect(mockDisciplineValidator.validateMemberExists).toHaveBeenCalledWith(mockRequest.member_id);
+        expect(mockDisciplineRepo.create).toHaveBeenCalledWith(mockRequest);
+        expect(result).toEqual(mockResponse);
+    });
+
     
 });
