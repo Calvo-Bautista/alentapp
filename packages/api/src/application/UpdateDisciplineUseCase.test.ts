@@ -53,6 +53,15 @@ describe('UpdateDisciplineUseCase', () => {
         expect(mockDisciplineRepo.update).toHaveBeenCalledWith('sancion-1', updateData);
     });
 
-    
+    it('debe validar las fechas si end_date cambia y es diferente', async () => {
+        const updateData: UpdateDisciplineRequest = { end_date: '2026-06-20' };
+        vi.mocked(mockDisciplineValidator.validateDates).mockReturnValueOnce(undefined);
+        vi.mocked(mockDisciplineRepo.update).mockResolvedValueOnce({ ...mockExistingDiscipline, ...updateData });
+
+        await useCase.execute('sancion-1', updateData);
+
+        expect(mockDisciplineValidator.validateDates).toHaveBeenCalledWith(mockExistingDiscipline.start_date, '2026-06-20');
+        expect(mockDisciplineRepo.update).toHaveBeenCalledWith('sancion-1', updateData);
+    });
 
 });
