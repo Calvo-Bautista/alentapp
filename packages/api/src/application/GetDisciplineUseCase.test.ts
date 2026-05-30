@@ -60,5 +60,16 @@ describe('GetDisciplineUseCase', () => {
         expect(mockDisciplineRepo.findByMemberId).toHaveBeenCalledWith("1");
     });
 
-    
+    it('debe retornar un arreglo vacío si el repositorio retorna null (sin sanciones)', async () => {
+        vi.mocked(mockDisciplineRepo.findByMemberId).mockResolvedValueOnce(null as any);
+
+        const result = await useCase.getByMemberId("2");
+
+        expect(result).toEqual([]);
+        expect(mockDisciplineRepo.findByMemberId).toHaveBeenCalledWith("2");
+    });
+
+    it('debe lanzar un error si no se provee el ID del socio', async () => {
+        await expect(useCase.getByMemberId("")).rejects.toThrow('El ID del socio es requerido');
+    });
 });
