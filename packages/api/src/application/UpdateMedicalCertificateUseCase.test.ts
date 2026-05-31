@@ -40,4 +40,15 @@ describe('UpdateMedicalCertificateUseCase', () => {
         expect(mockCertRepo.findById).toHaveBeenCalledWith('cert-404');
         expect(mockCertRepo.update).not.toHaveBeenCalled();
     });
+
+    it('debe validar las fechas si issue_date cambia', async () => {
+        const updateData: UpdateMedicalCertificateRequest = { issue_date: '2025-02-01' };
+        vi.mocked(mockCertValidator.validateDates).mockReturnValueOnce(undefined);
+        vi.mocked(mockCertRepo.update).mockResolvedValueOnce({ ...mockExistingCertificate, ...updateData });
+
+        await useCase.execute('cert-1', updateData);
+
+        expect(mockCertValidator.validateDates).toHaveBeenCalledWith('2025-02-01', mockExistingCertificate.expiry_date);
+        expect(mockCertRepo.update).toHaveBeenCalledWith('cert-1', updateData);
+    });
 });
