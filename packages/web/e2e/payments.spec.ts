@@ -110,7 +110,8 @@ test.describe('Payments E2E (UI Integration)', () => {
     await page.getByRole('button', { name: 'Registrar Pago' }).click();
     await expect(page.getByText('Registrar Nuevo Pago')).toBeVisible();
 
-    await page.getByPlaceholder('Seleccione un socio').click();
+    // Seleccionar socio usando el combobox
+    await page.getByRole('combobox').first().click();
     await page.getByRole('option', { name: /Socio E2E Test/ }).click();
 
     await page.getByPlaceholder('0.00').fill('5000');
@@ -124,7 +125,8 @@ test.describe('Payments E2E (UI Integration)', () => {
 
     await page.getByLabel('Fecha de Vencimiento').fill('2026-10-15');
 
-    await page.getByRole('button', { name: 'Registrar Pago', exact: true }).nth(1).click();
+    // Enviar el formulario usando el botón dentro del modal para evitar ambigüedad
+    await page.getByRole('dialog').getByRole('button', { name: 'Registrar Pago' }).click();
 
     await expect(page.getByText('Registrar Nuevo Pago')).toBeHidden();
     await expect(page.getByText('$5.000,00')).toBeVisible();
