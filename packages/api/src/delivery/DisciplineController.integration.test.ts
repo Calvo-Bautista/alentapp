@@ -111,5 +111,27 @@ describe('Discipline API Integration Tests', () => {
         });
     });
 
-    
+    describe('POST /api/v1/disciplinas', () => {
+        it('debe retornar 201 y crear la sanción atravesando todas las capas', async () => {
+            const payload: CreateDisciplineRequest = {
+                reason: 'Conducta antideportiva',
+                start_date: '2026-07-01',
+                end_date: '2026-07-15',
+                is_total_suspension: true,
+                member_id: 'socio-1',
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/disciplinas',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(201);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('sancion-new');
+            expect(body.data.reason).toBe('Conducta antideportiva');
+            expect(body.data.is_total_suspension).toBe(true);
+        });
+    });
 });
