@@ -192,5 +192,15 @@ describe('Discipline API Integration Tests', () => {
         });
     });
 
-    
+    describe('DELETE /api/v1/disciplinas/:id', () => {
+        it('debe retornar 204 sin cuerpo si la eliminación es exitosa', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/disciplinas/sancion-1',
+            });
+
+            expect(response.statusCode).toBe(204);
+            expect(response.payload).toBe('');
+        });
+    });    
 });
