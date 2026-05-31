@@ -186,4 +186,16 @@ describe('MedicalCertificate API Integration Tests', () => {
             expect(body.data.doctor_license).toBe('MP-MODIFIED');
         });
     });
+
+    describe('DELETE /api/v1/medical-certificates/:id', () => {
+        it('debe retornar 204 sin cuerpo si la eliminacion es exitosa', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/medical-certificates/cert-1',
+            });
+
+            expect(response.statusCode).toBe(204);
+            expect(response.payload).toBe('');
+        });
+    });
 });
