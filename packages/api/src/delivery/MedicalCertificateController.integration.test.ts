@@ -149,5 +149,24 @@ describe('MedicalCertificate API Integration Tests', () => {
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('El socio indicado no existe');
         });
+
+        it('debe retornar 400 si las fechas son invalidas (vencimiento antes de emision)', async () => {
+            const payload: CreateMedicalCertificateRequest = {
+                member_id: 'socio-1',
+                issue_date: '2025-08-01',
+                expiry_date: '2025-02-01',
+                doctor_license: 'MP-999',
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/medical-certificates',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El vencimiento debe ser posterior a la emision');
+        });
     });
 });
