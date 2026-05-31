@@ -34,4 +34,12 @@ describe('DeleteMedicalCertificateUseCase', () => {
         expect(mockCertRepo.findById).toHaveBeenCalledWith('cert-1');
         expect(mockCertRepo.delete).toHaveBeenCalledWith('cert-1');
     });
+
+    it('debe lanzar error y no eliminar nada si el certificado no existe', async () => {
+        vi.mocked(mockCertRepo.findById).mockResolvedValueOnce(null);
+
+        await expect(useCase.execute('cert-404')).rejects.toThrow('El certificado no existe');
+
+        expect(mockCertRepo.delete).not.toHaveBeenCalled();
+    });
 });
