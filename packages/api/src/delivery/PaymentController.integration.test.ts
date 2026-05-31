@@ -77,5 +77,25 @@ describe('Payment API Integration Tests', () => {
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('El monto del pago debe ser mayor a 0 (cero)');
         });
+
+        it('debe retornar 400 si el socio indicado no existe', async () => {
+            const payload = {
+                month: 6,
+                year: 2026,
+                due_date: '2026-06-10',
+                amount: 1500,
+                member_id: 'no-existe'
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/payments',
+                payload
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El socio indicado no existe');
+        });
     });
 });
