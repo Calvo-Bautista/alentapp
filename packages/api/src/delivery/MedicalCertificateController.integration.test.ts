@@ -130,5 +130,24 @@ describe('MedicalCertificate API Integration Tests', () => {
             expect(body.data.doctor_license).toBe('MP-999');
             expect(body.data.is_validated).toBe(true);
         });
+
+        it('debe retornar 404 si el socio no existe', async () => {
+            const payload: CreateMedicalCertificateRequest = {
+                member_id: 'socio-404',
+                issue_date: '2025-02-01',
+                expiry_date: '2025-08-01',
+                doctor_license: 'MP-999',
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/medical-certificates',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(404);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El socio indicado no existe');
+        });
     });
 });
