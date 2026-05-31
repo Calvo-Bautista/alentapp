@@ -114,5 +114,25 @@ describe('Sport API Integration Tests', () => {
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('Ya existe un deporte con ese nombre');
         });
+
+        it('debe retornar 400 si la capacidad máxima es menor o igual a 0', async () => {
+            const payload: CreateSportRequest = {
+                name: 'Paddle',
+                description: 'Paddle',
+                max_capacity: 0, // Capacidad inválida
+                additional_price: 600,
+                requires_medical_certificate: false,
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/sports',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('La capacidad máxima debe ser mayor a 0');
+        });
     });
 });
