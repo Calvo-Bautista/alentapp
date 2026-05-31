@@ -169,4 +169,21 @@ describe('MedicalCertificate API Integration Tests', () => {
             expect(body.error).toBe('El vencimiento debe ser posterior a la emision');
         });
     });
+
+    describe('PUT /api/v1/medical-certificates/:id', () => {
+        it('debe retornar 200 y los datos actualizados al editar un certificado existente', async () => {
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/medical-certificates/cert-1',
+                payload: {
+                    doctor_license: 'MP-MODIFIED',
+                },
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('cert-1');
+            expect(body.data.doctor_license).toBe('MP-MODIFIED');
+        });
+    });
 });
