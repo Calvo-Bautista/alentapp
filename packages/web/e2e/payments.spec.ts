@@ -76,6 +76,19 @@ test.describe('Payments E2E (UI Integration)', () => {
         } else {
           await route.fulfill({ status: 404 });
         }
+      } else if (url.includes('/cancel')) {
+        const urlObj = new URL(url);
+        const segments = urlObj.pathname.split('/');
+        // URL is /api/v1/payments/:id/cancel
+        const id = segments[segments.length - 2];
+        const index = mockPayments.findIndex(p => p.id === id);
+        
+        if (index > -1) {
+          mockPayments[index] = { ...mockPayments[index], status: 'Canceled' };
+          await route.fulfill({ status: 204 });
+        } else {
+          await route.fulfill({ status: 404 });
+        }
       } else if (method === 'OPTIONS') {
         await route.fulfill({
           status: 200,
@@ -125,5 +138,14 @@ test.describe('Payments E2E (UI Integration)', () => {
 
     await expect(page.getByText('Pagado', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Registrar cobro' })).toBeDisabled();
+  });
+
+  test('debe permitir cancelar un pago', async ({ page }) => {
+    page.on('dialog', dialog => dialog.accept());
+
+    await page.getByRole('button', { name: 'Cancelar pago' }).click();
+
+    await expect(page.getByText('Cancelado', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancelar pago' })).toBeDisabled();
   });
 });
