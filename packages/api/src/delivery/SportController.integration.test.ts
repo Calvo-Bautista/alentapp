@@ -94,5 +94,25 @@ describe('Sport API Integration Tests', () => {
             expect(body.data.name).toBe('Tenis');
             expect(body.data.max_capacity).toBe(4);
         });
+
+        it('debe retornar 409 si el nombre de deporte ya existe', async () => {
+            const payload: CreateSportRequest = {
+                name: 'Fútbol', // Nombre que ya existe en el mock
+                description: 'Otro fútbol',
+                max_capacity: 10,
+                additional_price: 800,
+                requires_medical_certificate: true,
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/sports',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(409);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Ya existe un deporte con ese nombre');
+        });
     });
 });
