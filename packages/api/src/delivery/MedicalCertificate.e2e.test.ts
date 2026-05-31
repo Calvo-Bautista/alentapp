@@ -101,4 +101,20 @@ describe('MedicalCertificate API End-to-End Tests', () => {
         const dbCert = await prisma.medicalCertificate.findUnique({ where: { id: createdCertificateId } });
         expect(dbCert?.doctor_license).toBe('MP-UPDATED-999');
     });
+
+    it('3. DELETE: Debe eliminar físicamente el certificado de la base de datos', async () => {
+        const response = await app.inject({
+            method: 'DELETE',
+            url: `/api/v1/medical-certificates/${createdCertificateId}`
+        });
+
+        expect(response.statusCode).toBe(204);
+
+        // Verificar que Prisma ya no lo encuentra en la DB Real
+        const dbCert = await prisma.medicalCertificate.findUnique({ where: { id: createdCertificateId } });
+        expect(dbCert).toBeNull();
+        
+        // Anular variable para que afterAll no intente borrarlo nuevamente
+        createdCertificateId = '';
+    });
 });
