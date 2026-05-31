@@ -56,6 +56,26 @@ test.describe('Payments E2E (UI Integration)', () => {
           contentType: 'application/json',
           body: JSON.stringify({ data: newPayment })
         });
+      } else if (method === 'PUT') {
+        const urlObj = new URL(url);
+        const id = urlObj.pathname.split('/').pop();
+        const payload = route.request().postDataJSON();
+        const index = mockPayments.findIndex(p => p.id === id);
+        
+        if (index > -1) {
+          mockPayments[index] = { 
+            ...mockPayments[index], 
+            ...payload,
+            payment_date: payload.status === 'Paid' ? new Date().toISOString() : mockPayments[index].payment_date
+          };
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ data: mockPayments[index] })
+          });
+        } else {
+          await route.fulfill({ status: 404 });
+        }
       } else if (method === 'OPTIONS') {
         await route.fulfill({
           status: 200,
@@ -96,5 +116,14 @@ test.describe('Payments E2E (UI Integration)', () => {
     await expect(page.getByText('Registrar Nuevo Pago')).toBeHidden();
     await expect(page.getByText('$5.000,00')).toBeVisible();
     await expect(page.getByText('10/2026')).toBeVisible();
+  });
+
+  test('debe permitir marcar un pago como cobrado', async ({ page }) => {
+    page.on('dialog', dialog => dialog.accept());
+
+    await page.getByRole('button', { name: 'Registrar cobro' }).click();
+
+    await expect(page.getByText('Pagado', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Registrar cobro' })).toBeDisabled();
   });
 });
