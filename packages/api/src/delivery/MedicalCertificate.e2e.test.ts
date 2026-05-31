@@ -81,4 +81,24 @@ describe('MedicalCertificate API End-to-End Tests', () => {
         expect(dbCert?.doctor_license).toBe('MP-TEST-123');
         expect(dbCert?.member_id).toBe(testMemberId);
     });
+
+    it('2. PUT: Debe actualizar el certificado modificando la base de datos', async () => {
+        const updatePayload = {
+            doctor_license: 'MP-UPDATED-999'
+        };
+
+        const response = await app.inject({
+            method: 'PUT',
+            url: `/api/v1/medical-certificates/${createdCertificateId}`,
+            payload: updatePayload
+        });
+
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.payload);
+        expect(body.data.doctor_license).toBe('MP-UPDATED-999');
+
+        // Verificar directamente en PostgreSQL que el campo se modificó
+        const dbCert = await prisma.medicalCertificate.findUnique({ where: { id: createdCertificateId } });
+        expect(dbCert?.doctor_license).toBe('MP-UPDATED-999');
+    });
 });
