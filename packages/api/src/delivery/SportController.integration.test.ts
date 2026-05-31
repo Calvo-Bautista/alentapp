@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { buildApp } from '../app.js';
-import { CreateSportRequest } from '@alentapp/shared';
+import { CreateSportRequest, UpdateSportRequest } from '@alentapp/shared';
 
 // Mockeamos el repositorio de infraestructura para aislar la base de datos real.
 vi.mock('../infrastructure/PostgresSportRepository.js', () => {
@@ -18,6 +18,20 @@ vi.mock('../infrastructure/PostgresSportRepository.js', () => {
                         requires_medical_certificate: true,
                     },
                 ];
+            }
+
+            async findById(id: string) {
+                if (id === 'sport-1') {
+                    return {
+                        id: 'sport-1',
+                        name: 'Fútbol',
+                        description: 'Fútbol 11',
+                        max_capacity: 22,
+                        additional_price: 1500,
+                        requires_medical_certificate: true,
+                    };
+                }
+                return null;
             }
 
             async findByName(name: string) {
@@ -38,6 +52,17 @@ vi.mock('../infrastructure/PostgresSportRepository.js', () => {
                 return {
                     id: 'sport-new',
                     ...data,
+                };
+            }
+
+            async update(id: string, data: any) {
+                return {
+                    id,
+                    name: 'Fútbol', // El nombre es inmutable
+                    description: data.description ?? 'Fútbol 11',
+                    max_capacity: data.max_capacity ?? 22,
+                    additional_price: data.additional_price ?? 1500,
+                    requires_medical_certificate: data.requires_medical_certificate ?? true,
                 };
             }
         },
@@ -133,6 +158,27 @@ describe('Sport API Integration Tests', () => {
             expect(response.statusCode).toBe(400);
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('La capacidad máxima debe ser mayor a 0');
+        });
+    });
+
+    describe('PUT /api/v1/sports/:id', () => {
+        it('debe retornar 200 y actualizar el deporte si la petición es válida', async () => {
+            const payload: UpdateSportRequest = {
+                description: 'Fútbol 11 modificado',
+                max_capacity: 30,
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/sports/sport-1',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('sport-1');
+            expect(body.data.description).toBe('Fútbol 11 modificado');
+            expect(body.data.max_capacity).toBe(30);
         });
     });
 });
