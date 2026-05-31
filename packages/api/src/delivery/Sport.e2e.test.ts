@@ -69,4 +69,31 @@ describe('Sport API End-to-End Tests', () => {
         expect(dbSport?.max_capacity).toBe(20);
         expect(dbSport?.requires_medical_certificate).toBe(true);
     });
+
+    it('2. PUT: Debe actualizar el deporte modificando la base de datos', async () => {
+        const updatePayload = {
+            description: 'Descripción actualizada en test E2E',
+            max_capacity: 30,
+            additional_price: 750,
+            requires_medical_certificate: false,
+        };
+
+        const response = await app.inject({
+            method: 'PUT',
+            url: `/api/v1/sports/${createdSportId}`,
+            payload: updatePayload,
+        });
+
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.payload);
+        expect(body.data.description).toBe('Descripción actualizada en test E2E');
+        expect(body.data.max_capacity).toBe(30);
+
+        // Verificar directamente en PostgreSQL que los campos se actualizaron
+        const dbSport = await prisma.sport.findUnique({ where: { id: createdSportId } });
+        expect(dbSport?.description).toBe('Descripción actualizada en test E2E');
+        expect(dbSport?.max_capacity).toBe(30);
+        expect(dbSport?.additional_price).toBe(750);
+        expect(dbSport?.requires_medical_certificate).toBe(false);
+    });
 });
