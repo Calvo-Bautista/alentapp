@@ -66,4 +66,17 @@ describe('CreateMedicalCertificateUseCase', () => {
         expect(mockCertRepo.invalidateByMemberId).not.toHaveBeenCalled();
         expect(mockCertRepo.create).not.toHaveBeenCalled();
     });
+
+    it('debe lanzar error si el socio no existe y no persistir nada', async () => {
+        const errorMsg = 'El socio indicado no existe';
+        vi.mocked(mockValidator.validateDates).mockReturnValue(undefined);
+        vi.mocked(mockValidator.validateMemberExists).mockRejectedValueOnce(new Error(errorMsg));
+
+        await expect(useCase.execute(mockRequest)).rejects.toThrow(errorMsg);
+
+        expect(mockValidator.validateDates).toHaveBeenCalledWith(mockRequest.issue_date, mockRequest.expiry_date);
+        expect(mockValidator.validateMemberExists).toHaveBeenCalledWith(mockRequest.member_id);
+        expect(mockCertRepo.invalidateByMemberId).not.toHaveBeenCalled();
+        expect(mockCertRepo.create).not.toHaveBeenCalled();
+    });
 });
