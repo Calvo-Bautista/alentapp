@@ -164,7 +164,7 @@ export function buildApp() {
 
     // TDD-0012: Intento de DELETE físico debe retornar 405
     server.delete('/api/v1/payments/:id', async (req, rep) => {
-        return rep.status(405).send({ error: 'Método no permitido. Use /cancel para anulación lógica.' });
+        return rep.status(405).send({ error: 'Método no implementado/permitido' });
     });
 
     // Rutas MedicalCertificate
