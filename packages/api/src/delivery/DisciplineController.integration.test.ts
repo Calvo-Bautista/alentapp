@@ -153,5 +153,26 @@ describe('Discipline API Integration Tests', () => {
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('No existe ese socio en el club');
         });
+
+        it('debe retornar 400 si la fecha de inicio es posterior a la de fin', async () => {
+            const payload: CreateDisciplineRequest = {
+                reason: 'Fechas invertidas',
+                start_date: '2026-08-15',
+                end_date: '2026-08-01',
+                is_total_suspension: false,
+                member_id: 'socio-1',
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/disciplinas',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('La fecha de inicio debe ser menor a la fecha de fin');
+        });
     });
+
 });
