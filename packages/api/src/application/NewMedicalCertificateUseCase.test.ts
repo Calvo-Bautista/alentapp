@@ -52,4 +52,18 @@ describe('CreateMedicalCertificateUseCase', () => {
         expect(mockCertRepo.create).toHaveBeenCalled();
         expect(result).toEqual(mockResponse);
     });
+
+    it('debe lanzar error si las fechas son invalidas y no persistir nada', async () => {
+        const errorMsg = 'El vencimiento debe ser posterior a la emision';
+        vi.mocked(mockValidator.validateDates).mockImplementationOnce(() => {
+            throw new Error(errorMsg);
+        });
+
+        await expect(useCase.execute(mockRequest)).rejects.toThrow(errorMsg);
+
+        expect(mockValidator.validateDates).toHaveBeenCalledWith(mockRequest.issue_date, mockRequest.expiry_date);
+        expect(mockValidator.validateMemberExists).not.toHaveBeenCalled();
+        expect(mockCertRepo.invalidateByMemberId).not.toHaveBeenCalled();
+        expect(mockCertRepo.create).not.toHaveBeenCalled();
+    });
 });
