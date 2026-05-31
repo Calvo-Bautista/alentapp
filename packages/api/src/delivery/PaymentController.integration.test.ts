@@ -118,4 +118,16 @@ describe('Payment API Integration Tests', () => {
             expect(body.data.status).toBe('Paid');
         });
     });
+
+    describe('DELETE /api/v1/payments/:id/cancel (TDD-0012)', () => {
+        it('debe retornar 204 y anular el pago correctamente (borrado lógico)', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/payments/p1/cancel'
+            });
+
+            expect(response.statusCode).toBe(204);
+            expect(response.payload).toBe('');
+        });
+    });
 });
