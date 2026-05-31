@@ -133,5 +133,25 @@ describe('Discipline API Integration Tests', () => {
             expect(body.data.reason).toBe('Conducta antideportiva');
             expect(body.data.is_total_suspension).toBe(true);
         });
+    
+        it('debe retornar 400 si el socio no existe en el club', async () => {
+            const payload: CreateDisciplineRequest = {
+                reason: 'Conducta antideportiva',
+                start_date: '2026-07-01',
+                end_date: '2026-07-15',
+                is_total_suspension: false,
+                member_id: 'socio-inexistente',
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/disciplinas',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('No existe ese socio en el club');
+        });
     });
 });
