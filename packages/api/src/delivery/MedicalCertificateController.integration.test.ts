@@ -108,4 +108,27 @@ describe('MedicalCertificate API Integration Tests', () => {
             expect(body.data[0].doctor_license).toBe('MP-123');
         });
     });
+
+    describe('POST /api/v1/medical-certificates', () => {
+        it('debe retornar 201 y crear el certificado atravesando todas las capas', async () => {
+            const payload: CreateMedicalCertificateRequest = {
+                member_id: 'socio-1',
+                issue_date: '2025-02-01',
+                expiry_date: '2025-08-01',
+                doctor_license: 'MP-999',
+            };
+
+            const response = await app.inject({
+                method: 'POST',
+                url: '/api/v1/medical-certificates',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(201);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('cert-new');
+            expect(body.data.doctor_license).toBe('MP-999');
+            expect(body.data.is_validated).toBe(true);
+        });
+    });
 });
