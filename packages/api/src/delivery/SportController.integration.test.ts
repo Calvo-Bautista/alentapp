@@ -65,6 +65,10 @@ vi.mock('../infrastructure/PostgresSportRepository.js', () => {
                     requires_medical_certificate: data.requires_medical_certificate ?? true,
                 };
             }
+
+            async delete(id: string) {
+                return;
+            }
         },
     };
 });
@@ -179,6 +183,18 @@ describe('Sport API Integration Tests', () => {
             expect(body.data.id).toBe('sport-1');
             expect(body.data.description).toBe('Fútbol 11 modificado');
             expect(body.data.max_capacity).toBe(30);
+        });
+    });
+
+    describe('DELETE /api/v1/sports/:id', () => {
+        it('debe retornar 204 y eliminar el deporte correctamente', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/sports/sport-1',
+            });
+
+            expect(response.statusCode).toBe(204);
+            expect(response.payload).toBe('');
         });
     });
 });
