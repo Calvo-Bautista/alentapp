@@ -129,5 +129,16 @@ describe('Payment API Integration Tests', () => {
             expect(response.statusCode).toBe(204);
             expect(response.payload).toBe('');
         });
+
+        it('debe retornar 405 si se intenta un borrado físico', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/payments/p1'
+            });
+
+            expect(response.statusCode).toBe(405);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Método no implementado/permitido');
+        });
     });
 });
