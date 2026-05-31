@@ -51,4 +51,15 @@ describe('UpdateMedicalCertificateUseCase', () => {
         expect(mockCertValidator.validateDates).toHaveBeenCalledWith('2025-02-01', mockExistingCertificate.expiry_date);
         expect(mockCertRepo.update).toHaveBeenCalledWith('cert-1', updateData);
     });
+
+    it('debe validar las fechas si expiry_date cambia', async () => {
+        const updateData: UpdateMedicalCertificateRequest = { expiry_date: '2025-08-01' };
+        vi.mocked(mockCertValidator.validateDates).mockReturnValueOnce(undefined);
+        vi.mocked(mockCertRepo.update).mockResolvedValueOnce({ ...mockExistingCertificate, ...updateData });
+
+        await useCase.execute('cert-1', updateData);
+
+        expect(mockCertValidator.validateDates).toHaveBeenCalledWith(mockExistingCertificate.issue_date, '2025-08-01');
+        expect(mockCertRepo.update).toHaveBeenCalledWith('cert-1', updateData);
+    });
 });
