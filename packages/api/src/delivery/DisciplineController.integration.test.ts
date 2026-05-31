@@ -34,14 +34,14 @@ vi.mock('../infrastructure/PostgresDisciplineRepository.js', () => {
             }
             async findByMemberId(memberId: string) {
                 return memberId === "socio-1"
-                    ? {
+                    ? [{
                               id: 'sancion-1',
                               reason: "Sancion deportiva",
                               start_date: '2026-05-23',
                               end_date: '2026-06-23',
                               is_total_suspension: false,
                               member_id: "socio-1",
-                      }
+                      }]
                     : null;
             }
             async create(data: any) {
@@ -63,6 +63,23 @@ vi.mock('../infrastructure/PostgresDisciplineRepository.js', () => {
             async delete(_id: string) {
                 return;
             }
+        },
+    };
+});
+
+// Mockeamos también MemberRepository porque DisciplineValidator depende de él
+// para validar que el socio exista antes de crear/actualizar una sanción
+vi.mock('../infrastructure/PostgresMemberRepository.js', () => {
+    return {
+        PostgresMemberRepository: class {
+            async findAll() { return []; }
+            async findById(id: string) {
+                return id === 'socio-1' ? { id: 'socio-1', name: 'Juan Perez' } : null;
+            }
+            async findByDni() { return null; }
+            async create(data: any) { return { id: 'm-1', ...data }; }
+            async update(id: string, data: any) { return { id, ...data }; }
+            async delete() { return; }
         },
     };
 });
