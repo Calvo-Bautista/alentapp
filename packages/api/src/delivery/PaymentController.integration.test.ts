@@ -98,4 +98,24 @@ describe('Payment API Integration Tests', () => {
             expect(body.error).toBe('El socio indicado no existe');
         });
     });
+
+    describe('PUT /api/v1/payments/:id (TDD-0011)', () => {
+        it('debe retornar 200 y actualizar el pago correctamente', async () => {
+            const payload = {
+                status: 'Paid',
+                payment_date: '2026-06-15'
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/payments/p1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('p1');
+            expect(body.data.status).toBe('Paid');
+        });
+    });
 });
