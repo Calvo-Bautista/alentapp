@@ -175,4 +175,22 @@ describe('Discipline API Integration Tests', () => {
         });
     });
 
+    describe('PUT /api/v1/disciplinas/:id', () => {
+        it('debe retornar 200 y los datos actualizados al editar una sanción existente', async () => {
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/disciplinas/sancion-1',
+                payload: {
+                    reason: 'Sancion modificada por reincidencia',
+                },
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.id).toBe('sancion-1');
+            expect(body.data.reason).toBe('Sancion modificada por reincidencia');
+        });
+    });
+
+    
 });
