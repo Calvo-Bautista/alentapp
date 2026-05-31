@@ -84,3 +84,17 @@ vi.mock('../infrastructure/PostgresMemberRepository.js', () => {
     };
 });
 
+describe('Discipline API Integration Tests', () => {
+    let app: FastifyInstance;
+
+    beforeAll(async () => {
+        app = buildApp();
+        await app.ready();
+    });
+
+    afterAll(async () => {
+        await app.close();
+    });
+
+    
+});
