@@ -96,4 +96,20 @@ describe('Sport API End-to-End Tests', () => {
         expect(dbSport?.additional_price).toBe(750);
         expect(dbSport?.requires_medical_certificate).toBe(false);
     });
+
+    it('3. DELETE: Debe eliminar físicamente el deporte de la base de datos', async () => {
+        const response = await app.inject({
+            method: 'DELETE',
+            url: `/api/v1/sports/${createdSportId}`,
+        });
+
+        expect(response.statusCode).toBe(204);
+
+        // Verificar que Prisma ya no lo encuentra en la DB real
+        const dbSport = await prisma.sport.findUnique({ where: { id: createdSportId } });
+        expect(dbSport).toBeNull();
+
+        // Anular la variable para que afterAll no intente borrarlo nuevamente
+        createdSportId = '';
+    });
 });
