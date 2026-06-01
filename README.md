@@ -47,6 +47,8 @@ npx prisma studio
 
 El proyecto cuenta con una suite completa de tests (Unitarios, Integración y E2E Full-Stack). Para aprender a ejecutarlos y ver los diferentes modos disponibles (UI, Headed, Docker), consulta la **[Guía de Testing](./docs/TESTING.md)**.
 
+> Antes de correr los tests por primera vez: generá el cliente de Prisma (`cd packages/api && npx prisma generate`) e instalá los navegadores de Playwright para los E2E (`npx playwright install chromium`).
+
 ## 🤝 Contribuir
 
 Si deseas colaborar con el proyecto, por favor lee primero nuestra **[Guía de Contribución](./docs/CONTRIBUTING.md)** para entender el flujo de trabajo con feature branches y los estándares de código.
