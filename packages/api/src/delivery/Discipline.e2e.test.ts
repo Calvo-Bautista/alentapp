@@ -93,5 +93,26 @@ describe('Discipline API End-to-End Tests', () => {
         expect(dbDiscipline).not.toBeNull();
     });
 
+    it('3. POST: Debe retornar 400 si las fechas están invertidas', async () => {
+        const payload = {
+            reason: 'Sancion con fechas mal',
+            start_date: '2026-08-15',
+            end_date: '2026-08-01',  // anterior a start_date
+            is_total_suspension: false,
+            member_id: testMemberId,
+        };
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/disciplinas',
+            payload
+        });
+
+        expect(response.statusCode).toBe(400);
+        const body = JSON.parse(response.payload);
+        expect(body.error).toBe('La fecha de inicio debe ser menor a la fecha de fin');
+    });
+
+
     
 });
