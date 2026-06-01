@@ -10,16 +10,16 @@ export class PaymentValidator {
     async validateMemberExists(memberId: string): Promise<void> {
         const member = await this.memberRepo.findById(memberId);
         if (!member) {
-            throw new Error('El socio indicado no existe en el sistema');
+            throw new Error('El socio indicado no existe');
         }
     }
 
     validateInvariants(amount: number, month: number, year: number): void {
         if (amount <= 0) {
-            throw new Error('El monto del pago debe ser mayor a cero');
+            throw new Error('El monto del pago debe ser mayor a 0 (cero)');
         }
         if (month < 1 || month > 12) {
-            throw new Error('El mes debe estar comprendido entre 1 y 12');
+            throw new Error('El mes indicado no es válido');
         }
         
         const currentYear = new Date().getFullYear();
@@ -27,7 +27,7 @@ export class PaymentValidator {
         const maxYear = currentYear + 1;
 
         if (year < minYear || year > maxYear) {
-            throw new Error(`El año del pago no es válido. Debe estar entre ${minYear} y ${maxYear}`);
+            throw new Error('El año indicado no es válido');
         }
     }
 
