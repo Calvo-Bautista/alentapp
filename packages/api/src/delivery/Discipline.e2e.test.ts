@@ -133,4 +133,19 @@ describe('Discipline API End-to-End Tests', () => {
         expect(dbDiscipline?.reason).toBe('Sancion por incumplimiento de pagos');
     });
     
+    it('5. DELETE: Debe eliminar físicamente a la sancion de la bdd', async () => {
+        const response = await app.inject({
+            method: 'DELETE',
+            url: `/api/v1/disciplinas/${createdDisciplineId}`
+        });
+
+        expect(response.statusCode).toBe(204);
+
+        // Verificar que Prisma ya no lo encuentra en la DB Real
+        const dbDiscipline = await prisma.discipline.findUnique({ where: { id: createdDisciplineId } });
+        expect(dbDiscipline).toBeNull();
+        
+        // Anular variable para que afterAll no intente borrarlo nuevamente
+        createdDisciplineId = '';
+    });
 });
