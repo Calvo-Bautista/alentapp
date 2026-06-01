@@ -64,5 +64,34 @@ describe('Discipline API End-to-End Tests', () => {
         expect(Array.isArray(body.data)).toBe(true);
     });
 
+    it('2. POST: Debe crear una sanción en la base de datos', async () => {
+        const payload = {
+            reason: "Sancion deportiva por patada en partido",
+            start_date: '2026-05-23',
+            end_date: '2026-06-23',
+            is_total_suspension: false,
+            member_id: testMemberId,
+        };
+
+        const response = await app.inject({
+            method: 'POST',
+            url: '/api/v1/disciplinas',
+            payload
+        });
+
+        expect(response.statusCode).toBe(201);
+        const body = JSON.parse(response.payload);
+        
+        expect(body.data.id).toBeDefined();
+        expect(body.data.reason).toBe('Sancion deportiva por patada en partido');
+        
+        // Guardamos el ID para usarlo en el test PUT
+        createdDisciplineId = body.data.id;
+        
+        // Verificamos si persistié realmente
+        const dbDiscipline = await prisma.discipline.findUnique({ where: { id: createdDisciplineId } });
+        expect(dbDiscipline).not.toBeNull();
+    });
+
     
 });
