@@ -113,6 +113,24 @@ describe('Discipline API End-to-End Tests', () => {
         expect(body.error).toBe('La fecha de inicio debe ser menor a la fecha de fin');
     });
 
+    it('4. PUT: Debe actualizar la sancion modificando la bdd', async () => {
+        const updatePayload = {
+            reason: 'Sancion por incumplimiento de pagos'
+        };
 
+        const response = await app.inject({
+            method: 'PUT',
+            url: `/api/v1/disciplinas/${createdDisciplineId}`,
+            payload: updatePayload
+        });
+
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.payload);
+        expect(body.data.reason).toBe('Sancion por incumplimiento de pagos');
+
+        // Verificar directamente en PostgreSQL que el campo se modificó
+        const dbDiscipline = await prisma.discipline.findUnique({ where: { id: createdDisciplineId } });
+        expect(dbDiscipline?.reason).toBe('Sancion por incumplimiento de pagos');
+    });
     
 });
