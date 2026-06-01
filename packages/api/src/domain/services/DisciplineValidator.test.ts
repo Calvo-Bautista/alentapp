@@ -35,11 +35,11 @@ describe("DisciplineValidator", ()=>{
         })
 
         it('debe lanzar error si falta la fecha de inicio', () => {
-            expect(() => validator.validateDates('', '2022-01-02')).toThrow('La sancion debe tener un lapso de tiempo');
+            expect(() => validator.validateDates('', '2022-01-02')).toThrow('La sanción debe tener un lapso de tiempo');
         });
 
         it('debe lanzar error si falta la fecha de fin', () => {
-            expect(() => validator.validateDates('2022-01-01', '')).toThrow('La sancion debe tener un lapso de tiempo');
+            expect(() => validator.validateDates('2022-01-01', '')).toThrow('La sanción debe tener un lapso de tiempo');
         });
     })
 
