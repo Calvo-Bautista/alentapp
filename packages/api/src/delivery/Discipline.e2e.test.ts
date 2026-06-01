@@ -53,4 +53,16 @@ describe('Discipline API End-to-End Tests', () => {
         await app.close();
     });
 
+    it('1. GET: Debe retornar la lista de sanciones existente', async () => {
+        const response = await app.inject({
+            method: 'GET',
+            url: '/api/v1/disciplinas'
+        });
+
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.payload);
+        expect(Array.isArray(body.data)).toBe(true);
+    });
+
+    
 });
