@@ -1,8 +1,8 @@
-# Fase 1: Analizar y proponer
+# Análisis de Infraestructura para Producción
 
 **Autor:** moyanop (Pedro Moyano) **Actividad:** TP Integrador - Actividad 4, Fase 1
 
-## 1.1. Analizar la infraestructura Docker actual
+## 1. Analizar la infraestructura Docker actual
 
 A partir de la revisión de la configuración existente en los archivos `docker-compose.yml`, `packages/api/Dockerfile` y `packages/web/Dockerfile`, se identificaron los siguientes 5 problemas o vulnerabilidades respecto a las buenas prácticas de producción:
 
@@ -14,7 +14,7 @@ A partir de la revisión de la configuración existente en los archivos `docker-
 | **Falta de límites en el consumo de recursos**                        | `docker-compose.yml` (servicios `api` y `web`)                                          | Medio   | Establecer topes mediante `deploy.resources.limits` (CPU y memoria) para prevenir que un contenedor agote los recursos del host.                                  |
 | **Ausencia de monitoreo de estado funcional (Healthchecks)**          | `docker-compose.yml` (servicio `api`)                                                   | Medio   | Implementar directivas `healthcheck` (por ejemplo, con `wget` o `curl` a un endpoint `/health`) para verificar que la aplicación esté lista para recibir tráfico. |
 
-## 1.2. Investigar OpenTelemetry
+## 2. Investigar OpenTelemetry
 
 ### ¿Qué es OpenTelemetry y cómo se diferencia de Prometheus?
 
