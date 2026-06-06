@@ -22,57 +22,6 @@ A partir de los problemas identificados en la Fase 1 por cada integrante, se dis
 | Stage 2 | `build` | `node:22-alpine` | Instalar todas las dependencias (incluyendo devDependencies), compilar TypeScript a JavaScript (`tsc`), y ejecutar `prisma generate` para generar el cliente de Prisma. Esta etapa necesita las devDependencies pero no se incluye en la imagen final. |
 | Stage 3 | `runtime` | `node:22-alpine` | Copiar desde `deps` los `node_modules` de producción, y desde `build` el código JavaScript compilado y el cliente Prisma generado. Ejecutar con usuario no-root. |
 
-**Pseudocódigo del Dockerfile:**
-
-```dockerfile
-# ── Stage 1: deps ──────────────────────────────────────────────
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-COPY packages/api/package.json ./packages/api/
-COPY packages/shared/package.json ./packages/shared/
-RUN npm ci --omit=dev
-
-# ── Stage 2: build ─────────────────────────────────────────────
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY package.json package-lock.json ./
-COPY packages/api/package.json ./packages/api/
-COPY packages/shared/package.json ./packages/shared/
-RUN npm ci                          # Incluye devDeps (tsc, prisma, tsx)
-COPY packages/shared/ ./packages/shared/
-COPY packages/api/ ./packages/api/
-COPY tsconfig.json ./
-RUN npx prisma generate --config packages/api/prisma.config.ts
-RUN npx tsc -p packages/api/tsconfig.json   # Compilar TS → JS
-
-# ── Stage 3: runtime ──────────────────────────────────────────
-FROM node:22-alpine AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
-
-# Copiar dependencias de producción desde stage 1
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/api/node_modules ./packages/api/node_modules
-
-# Copiar código compilado desde stage 2
-COPY --from=build /app/packages/api/dist ./packages/api/dist
-COPY --from=build /app/packages/shared/dist ./packages/shared/dist
-COPY --from=build /app/packages/api/src/generated ./packages/api/src/generated
-
-COPY packages/api/package.json ./packages/api/
-COPY package.json ./
-
-# Usuario no-root
-USER node
-
-EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --spider --quiet http://localhost:3000/ || exit 1
-
-CMD ["node", "packages/api/dist/app.js"]
-```
 
 **Requisitos no funcionales:**
 
@@ -96,83 +45,6 @@ CMD ["node", "packages/api/dist/app.js"]
 | Stage 2 | `build` | `node:22-alpine` | Ejecutar `npm run build -w packages/web` (que internamente hace `tsc -b && vite build`) generando los archivos estáticos optimizados y minificados en `packages/web/dist`. |
 | Stage 3 | `runtime` | `nginx:stable-alpine` | Copiar los archivos estáticos compilados al directorio de nginx. Servir con configuración optimizada para producción. |
 
-**Pseudocódigo del Dockerfile:**
-
-```dockerfile
-# ── Stage 1: deps ──────────────────────────────────────────────
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-COPY packages/web/package.json ./packages/web/
-COPY packages/shared/package.json ./packages/shared/
-RUN npm ci
-
-# ── Stage 2: build ─────────────────────────────────────────────
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/web/node_modules ./packages/web/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY packages/shared/ ./packages/shared/
-COPY packages/web/ ./packages/web/
-COPY tsconfig.json ./
-COPY package.json ./
-RUN npm run build -w packages/web   # tsc -b && vite build → packages/web/dist
-
-# ── Stage 3: runtime ──────────────────────────────────────────
-FROM nginx:stable-alpine AS runtime
-
-# Copiar archivos estáticos compilados
-COPY --from=build /app/packages/web/dist /usr/share/nginx/html
-
-# Configuración personalizada de nginx
-COPY packages/web/nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --spider --quiet http://localhost:80/ || exit 1
-
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-**Configuración de nginx (`packages/web/nginx.conf`):**
-
-Se diseña una configuración de nginx optimizada para producción que incluya:
-
-```nginx
-server {
-    listen 80;
-    server_name _;
-    root /usr/share/nginx/html;
-    index index.html;
-
-    # Compresión gzip
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css application/json application/javascript
-               text/xml application/xml application/xml+rss text/javascript
-               image/svg+xml;
-
-    # Cache de assets estáticos (JS, CSS, imágenes con hash de Vite)
-    location /assets/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    # SPA: redirigir rutas no encontradas a index.html (para React Router)
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
 
 **Requisitos no funcionales:**
 
@@ -185,28 +57,110 @@ server {
 
 ---
 
-### `.dockerignore` mejorado
+### c) `docker-compose.prod.yml`
 
-Para ambos Dockerfiles, se propone ampliar el `.dockerignore` actual para excluir archivos innecesarios del contexto de build:
+#### Propósito
 
-```dockerignore
-node_modules
-dist
-.git
-*.log
-.env
-.env.*
-*.pdf
-docs/
-e2e-fullstack/
-playwright-report-fullstack/
-test-results/
-.eslintrc.js
-.prettierrc.json
-.editorconfig
-*.test.ts
-*.spec.ts
-__tests__/
-coverage/
-.vscode/
-```
+El archivo `docker-compose.prod.yml` tiene como propósito definir la configuración de ejecución del sistema en un entorno productivo. A diferencia del `docker-compose.yml` utilizado para desarrollo, este archivo debe estar orientado a levantar los servicios con una configuración más segura, estable y controlada.
+
+Este compose productivo será responsable de orquestar los servicios principales del sistema:
+
+* `api`: backend.
+* `web`: frontend servido mediante nginx.
+* `db`: base de datos PostgreSQL.
+
+La necesidad de este archivo surge porque el entorno productivo no debe depender de herramientas de desarrollo como hot reload, watchers, servidores de desarrollo o variables hardcodeadas. En producción se busca que los contenedores ejecuten imágenes ya construidas, con permisos limitados, healthchecks, límites de recursos, logging controlado y configuración externa mediante variables de entorno.
+
+De esta manera, `docker-compose.prod.yml` permite separar claramente la configuración de desarrollo de la configuración de producción, evitando mezclar necesidades distintas dentro de un mismo archivo.
+
+---
+
+#### Estructura propuesta
+
+El archivo se organizará en las siguientes secciones principales:
+
+
+---
+
+#### Servicio `api`
+
+El servicio `api` ejecutará la imagen productiva del backend, construida a partir de `packages/api/Dockerfile.prod`.
+
+Su responsabilidad será exponer la API en el puerto correspondiente, conectarse a la base de datos y ejecutar únicamente el código JavaScript compilado, sin herramientas de desarrollo como `tsx`, `tsc` o dependencias innecesarias.
+
+La configuración esperada para este servicio incluye:
+
+* Imagen construida desde `packages/api/Dockerfile.prod`.
+* Variables de entorno cargadas desde `.env`.
+* Dependencia de la base de datos mediante `depends_on`.
+* Healthcheck contra `localhost:3000`.
+* Límites de CPU y memoria.
+* Filesystem de solo lectura.
+* Usuario no-root definido desde la imagen.
+* Capabilities mínimas.
+* Política de seguridad `no-new-privileges`.
+* Logging con rotación.
+
+---
+
+#### Servicio `web`
+
+El servicio `web` ejecutará la imagen productiva del frontend, construida desde `packages/web/Dockerfile.prod`.
+
+A diferencia del entorno de desarrollo, el frontend no debería ejecutarse con `npm run dev` ni depender del servidor de desarrollo de Vite. En producción, Vite genera archivos estáticos mediante el build, y esos archivos deben ser servidos por nginx.
+
+La configuración esperada para este servicio incluye:
+
+* Imagen construida desde `packages/web/Dockerfile.prod`.
+* Exposición del puerto `80`.
+* Healthcheck contra `localhost:80`.
+* Configuración de seguridad con privilegios mínimos.
+* Logging con rotación.
+* Red interna personalizada.
+* Dependencia opcional de la API, si el frontend necesita que esté disponible para funcionar correctamente.
+
+Se agrega `NET_BIND_SERVICE` porque nginx necesita poder escuchar en el puerto 80 dentro del contenedor. El resto de capabilities se eliminan para reducir permisos innecesarios.
+
+---
+
+#### Servicio `db`
+
+El servicio `db` ejecutará PostgreSQL como base de datos del sistema. Será el único servicio con un volumen persistente, ya que la información almacenada debe sobrevivir aunque el contenedor sea eliminado o recreado.
+
+La configuración esperada incluye:
+
+* Imagen oficial de PostgreSQL.
+* Variables sensibles cargadas desde `.env`.
+* Volumen persistente para los datos.
+* Healthcheck con `pg_isready`.
+* Red interna personalizada.
+* Logging con rotación.
+* Límites de CPU y memoria.
+
+En este caso, la base de datos no debe tener sus credenciales hardcodeadas dentro del archivo compose. Esas variables deben provenir del archivo `.env`.
+
+---
+
+#### Variables sensibles y configuración por entorno
+
+Las variables sensibles no deben escribirse directamente en `docker-compose.prod.yml`. En su lugar, deben cargarse desde un archivo `.env`.
+
+---
+
+#### Requisitos no funcionales
+
+| Requisito                  | Diseño propuesto                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Disponibilidad             | Healthchecks para API y DB, permitiendo detectar servicios no saludables.                                              |
+| Seguridad                  | Uso de `read_only: true`, `cap_drop: ALL`, `cap_add: NET_BIND_SERVICE` solo donde sea necesario y `no-new-privileges`. |
+| Configuración externa      | Variables sensibles cargadas desde `.env`, evitando valores hardcodeados.                                              |
+| Administración de recursos | Definición de límites de CPU y memoria por servicio.                                                                   |
+| Logging                    | Logging con driver `json-file` y rotación mediante `max-size: 10m` y `max-file: 3`.                                    |
+| Aislamiento                | Red interna personalizada.                                                                                             |
+| Persistencia               | Volumen dedicado para PostgreSQL.                                                                                      |
+| Tiempo de startup          | Se espera que los servicios principales estén disponibles en menos de 30 segundos en un entorno local estándar.        |
+| Estabilidad                | La API debe esperar a que la base de datos esté saludable antes de iniciar su funcionamiento completo.                 |
+
+---
+
+
