@@ -5,6 +5,8 @@
     "main": "src/app.ts",
     "scripts": {
         "dev": "tsx watch src/app.ts",
+        "build": "prisma generate --config prisma.config.ts && esbuild $(find src -name '*.ts' ! -name '*.test.ts' ! -name '*.integration.test.ts' ! -name '*.e2e.test.ts' ! -path 'src/generated/*') --outdir=dist --outbase=src --platform=node --format=esm --target=node22 && cp -r src/generated dist/generated",
+        "start": "node dist/app.js",
         "test": "vitest",
         "coverage": "vitest run --coverage"
     },
@@ -12,13 +14,14 @@
         "@fastify/cors": "^11.2.0",
         "@prisma/adapter-pg": "^7.8.0",
         "@prisma/client": "^7.7.0",
-        "fastify": "^5.8.5"
+        "fastify": "^5.8.5",
+        "pg": "^8.20.0"
     },
     "devDependencies": {
         "@types/pg": "^8.20.0",
         "@vitest/coverage-v8": "^4.1.5",
         "dotenv": "^16.6.1",
-        "pg": "^8.20.0",
+        "esbuild": "^0.27.7",
         "prisma": "^7.7.0",
         "tsx": "^4.21.0",
         "vitest": "^4.1.5"
