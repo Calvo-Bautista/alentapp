@@ -79,7 +79,6 @@ De esta manera, `docker-compose.prod.yml` permite separar claramente la configur
 
 El archivo se organizará en las siguientes secciones principales:
 
-
 ---
 
 #### Servicio `api`
@@ -217,5 +216,26 @@ La integración del SDK de OpenTelemetry en la API se basa en un diseño modular
 4.  **Gestión del Ciclo de Vida:** El SDK se inicializa al arranque de la aplicación (proceso de "bootstrap") para asegurar que todas las librerías sean parcheadas correctamente desde el inicio. Asimismo, se implementa un manejo del evento `SIGTERM` para garantizar un cierre controlado, asegurando que los datos en memoria sean procesados antes de que el contenedor Docker finalice su ejecución.
 
 ---
+
+### c) Dashboard "RED — Alentapp API" en Grafana
+
+Diseñamos un dashboard con 6 paneles. Lo guardamos como código (JSON) en
+`observability/grafana/dashboards/red-metrics.json` para tenerlo versionado.
+
+| # | Panel | Query (PromQL) | Tipo de gráfico | Para qué sirve |
+|---|-------|----------------|-----------------|----------------|
+| 1 | Requests por segundo | `rate(http_server_duration_count[1m])` | Time series | Ver el tráfico actual |
+| 2 | Tasa de error (%) | `sum(rate(http_server_duration_count{status=~"5.."}[1m])) / sum(rate(http_server_duration_count[1m])) * 100` | Time series | % de requests que fallan |
+| 3 | Latencia p95 / p99 | `histogram_quantile(0.95, sum(rate(http_server_duration_bucket[5m])) by (le))` | Time series | Performance percibida |
+| 4 | Por status code | `sum by (status) (rate(http_server_duration_count[5m]))` | Stacked area | Distribución de respuestas |
+| 5 | Memoria del proceso | `process_memory_usage_bytes / 1024 / 1024` | Time series | Consumo de recursos |
+| 6 | Endpoints más lentos (top 5) | `topk(5, avg by (route) (http_server_duration_ms))` | Bar chart horizontal | Detectar cuellos de botella |
+
+**Stack de observabilidad.** Además del dashboard hay que levantar el backend, así que diseñamos
+dos servicios nuevos en el compose:
+- **Prometheus** (`observability/prometheus/prometheus.yml`): scrapea el endpoint `:9464/metrics`
+  de la API cada 15s.
+- **Grafana** (puerto 3001): con un datasource Prometheus ya configurado y el dashboard RED
+  cargado automáticamente (provisioning), así no hay que armarlo a mano cada vez.
 
 
