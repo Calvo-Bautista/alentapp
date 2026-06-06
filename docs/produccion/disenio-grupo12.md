@@ -162,5 +162,40 @@ Las variables sensibles no deben escribirse directamente en `docker-compose.prod
 | Estabilidad                | La API debe esperar a que la base de datos esté saludable antes de iniciar su funcionamiento completo.                 |
 
 ---
+## 2.2. Diseño de la observabilidad 
 
+### a) Métricas RED a capturar
 
+Se definen las siguientes métricas para instrumentar la API de alentapp, siguiendo la metodología RED (Rate, Errors, Duration):
+
+| Métrica      | Nombre técnico             | Tipo OTel | Descripción                                                | Labels                      |
+| :----------- | :------------------------- | :-------- | :--------------------------------------------------------- | :-------------------------- |
+| **Rate**     | `http_requests_total`      | Counter   | Cuenta el total de peticiones HTTP recibidas por la API    | `method`, `route`, `status` |
+| **Errors**   | `http_errors_total`        | Counter   | Cuenta las peticiones que resultan en error (HTTP 4xx/5xx) | `method`, `route`, `status` |
+| **Duration** | `http_request_duration_ms` | Histogram | Registra la latencia de cada petición en milisegundos      | `method`, `route`           |
+
+**Métricas adicionales (Gauge):**
+
+| Nombre técnico               | Tipo OTel     | Descripción                                    |
+| :--------------------------- | :------------ | :--------------------------------------------- |
+| `process_memory_usage_bytes` | Gauge         | Memoria RAM consumida por el proceso Node.js   |
+| `http_requests_active`       | UpDownCounter | Cantidad de peticiones en curso (concurrencia) |
+
+**Endpoints instrumentados:**
+
+Las métricas se capturarán de forma global para todos los endpoints de la API, siendo los principales:
+
+| Recurso              | Rutas                          | Operaciones                     |
+| :------------------- | :----------------------------- | :------------------------------ |
+| Socios               | `/api/v1/socios`               | GET, POST, PUT, DELETE          |
+| Pagos                | `/api/v1/payments`             | GET, POST, PUT, DELETE (cancel) |
+| Certificados Médicos | `/api/v1/medical-certificates` | GET, POST, PUT, DELETE          |
+| Disciplinas          | `/api/v1/disciplinas`          | GET, POST, PUT, DELETE          |
+| Deportes             | `/api/v1/sports`               | GET, POST, PUT, DELETE          |
+| Lockers              | `/api/v1/lockers`              | GET, POST, PUT, DELETE          |
+
+**Escenarios de verificación:**
+
+- DADO 10 requests a `GET /api/v1/socios` en 1 minuto → ENTONCES `rate(http_requests_total)` ≈ 0.166 req/s
+- DADO un `POST /api/v1/payments` con datos inválidos → ENTONCES `http_errors_total{status="400"}` se incrementa en 1
+- DADO requests exitosos a `GET /api/v1/lockers` → ENTONCES el percentil 50 de `http_request_duration_ms` < 500ms
