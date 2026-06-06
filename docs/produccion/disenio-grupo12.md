@@ -199,3 +199,23 @@ Las métricas se capturarán de forma global para todos los endpoints de la API,
 - DADO 10 requests a `GET /api/v1/socios` en 1 minuto → ENTONCES `rate(http_requests_total)` ≈ 0.166 req/s
 - DADO un `POST /api/v1/payments` con datos inválidos → ENTONCES `http_errors_total{status="400"}` se incrementa en 1
 - DADO requests exitosos a `GET /api/v1/lockers` → ENTONCES el percentil 50 de `http_request_duration_ms` < 500ms
+
+---
+
+### b) Configuración del OpenTelemetry SDK
+
+La integración del SDK de OpenTelemetry en la API se basa en un diseño modular y desacoplado que utiliza el **PrometheusExporter** como mecanismo de salida principal. A continuación se describen los componentes clave de la configuración:
+
+1.  **Exportación de Datos (Prometheus Exporter):** Se configura un exportador de métricas que habilita un servidor HTTP independiente en el puerto **9464**. Este puerto funciona bajo el modelo "Pull", permitiendo que Prometheus realice el scrape de las métricas en el endpoint `/metrics`. Esta configuración asegura que las métricas de monitoreo no interfieran con el tráfico de negocio de la API (puerto 3000).
+
+2.  **Instrumentación Automática:** Se utiliza el paquete de auto-instrumentaciones para Node.js, configurado específicamente para detectar y monitorizar de forma automática los frameworks **HTTP y Fastify**. Esto permite capturar el ciclo de vida de las solicitudes sin necesidad de modificar el código fuente de cada ruta, extrayendo metadatos como el método, la ruta y el código de estado.
+
+3.  **Registro de Métricas Personalizadas (RED):** El SDK actúa como el motor de registro para las métricas definidas en la sección anterior. 
+    *   Se crea un **Meter** global del cual se derivan los instrumentos técnicos: un `Counter` para la tasa de solicitudes y errores, y un `Histogram` para la duración. 
+    *   Estas métricas se vinculan directamente al lector de métricas del SDK para asegurar que cualquier actualización en los contadores sea reflejada inmediatamente en el exportador de Prometheus.
+
+4.  **Gestión del Ciclo de Vida:** El SDK se inicializa al arranque de la aplicación (proceso de "bootstrap") para asegurar que todas las librerías sean parcheadas correctamente desde el inicio. Asimismo, se implementa un manejo del evento `SIGTERM` para garantizar un cierre controlado, asegurando que los datos en memoria sean procesados antes de que el contenedor Docker finalice su ejecución.
+
+---
+
+
