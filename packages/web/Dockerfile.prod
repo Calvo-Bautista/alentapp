@@ -1,0 +1,39 @@
+# Stage 1: deps
+FROM node:22-alpine AS deps
+WORKDIR /app
+
+# Copiamos archivos de dependencias del root y de los paquetes necesarios
+COPY package*.json ./
+COPY packages/web/package*.json ./packages/web/
+COPY packages/shared/package*.json ./packages/shared/
+
+# Instalamos todas las dependencias (incluyendo devDependencies para el build)
+RUN npm ci
+
+# Stage 2: build
+FROM node:22-alpine AS build
+WORKDIR /app
+
+# Copiamos node_modules desde la etapa anterior
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Ejecutamos el build del paquete web (genera la carpeta dist)
+RUN npm run build -w packages/web
+
+# Stage 3: runtime
+FROM nginx:stable-alpine AS runtime
+
+# Copiamos los archivos estáticos compilados desde la etapa de build
+COPY --from=build /app/packages/web/dist /usr/share/nginx/html
+
+# Copiamos la configuración de nginx optimizada para producción
+COPY packages/web/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+# Healthcheck propuesto en el diseño
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget --spider http://localhost:80/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
