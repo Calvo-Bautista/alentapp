@@ -1,3 +1,5 @@
+import { httpRequests, httpErrors, httpDuration, activeRequests } from './infrastructure/telemetry.js';
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { PostgresMemberRepository } from './infrastructure/PostgresMemberRepository.js';
@@ -63,6 +65,18 @@ export function buildApp() {
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
+    });
+
+    server.addHook('onRequest', async () => {
+        activeRequests.add(1);
+    });
+    server.addHook('onResponse', async (request, reply) => {
+        const route = request.routeOptions?.url ?? request.url;
+        const labels = { method: request.method, route, status: String(reply.statusCode) };
+        httpRequests.add(1, labels);
+        if (reply.statusCode >= 400) httpErrors.add(1, labels);
+        httpDuration.record(reply.elapsedTime ?? 0, { method: request.method, route });
+        activeRequests.add(-1);
     });
 
     // Repositorios
@@ -172,7 +186,7 @@ export function buildApp() {
     server.post('/api/v1/medical-certificates', medicalCertificateController.create.bind(medicalCertificateController));
     server.delete('/api/v1/medical-certificates/:id', medicalCertificateController.delete.bind(medicalCertificateController));
     server.put('/api/v1/medical-certificates/:id', medicalCertificateController.update.bind(medicalCertificateController));
-  
+
     // Rutas Discipline
     server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
