@@ -55,6 +55,44 @@ services:
     networks:
       - alentapp-prod-network
 
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile.prod
+    image: alentapp-api:prod
+    container_name: alentapp-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}    
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    logging: *default-logging
+    networks:
+      - alentapp-prod-network
+
 volumes:
   postgres-prod-data:
 
