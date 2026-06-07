@@ -93,6 +93,47 @@ services:
     networks:
       - alentapp-prod-network
 
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile.prod
+    image: alentapp-web:prod
+    container_name: alentapp-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:rw,noexec,size=16m
+      - /var/run:rw,noexec,size=1m
+      - /tmp:rw,noexec,size=16m
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - NET_BIND_SERVICE
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    logging: *default-logging
+    networks:
+      - alentapp-prod-network
+
 volumes:
   postgres-prod-data:
 
