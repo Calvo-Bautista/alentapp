@@ -1,0 +1,64 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: alentapp-db
+    restart: unless-stopped
+    env_file:
+      - .env
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+      - ./packages/api/prisma/migrations/20260420032043_init_members/migration.sql:/docker-entrypoint-initdb.d/001-init-members.sql:ro
+      - ./packages/api/prisma/migrations/20260426215835_init/migration.sql:/docker-entrypoint-initdb.d/002-fix-members-created-at.sql:ro
+      - ./packages/api/prisma/migrations/20260428235636_add_birth_date/migration.sql:/docker-entrypoint-initdb.d/003-add-birth-date.sql:ro
+      - ./packages/api/prisma/migrations/20260429000321_rename_birthdate/migration.sql:/docker-entrypoint-initdb.d/004-rename-birthdate.sql:ro
+      - ./packages/api/prisma/migrations/20260511192456_init/migration.sql:/docker-entrypoint-initdb.d/005-create-payments.sql:ro
+      - ./packages/api/prisma/migrations/20260514204646_init/migration.sql:/docker-entrypoint-initdb.d/006-create-medical-certificates.sql:ro
+      - ./packages/api/prisma/migrations/20260515202903_init/migration.sql:/docker-entrypoint-initdb.d/007-create-disciplines.sql:ro
+      - ./packages/api/prisma/migrations/20260516000649_init/migration.sql:/docker-entrypoint-initdb.d/008-create-sports.sql:ro
+      - ./packages/api/prisma/migrations/20260516020000_create_lockers_table/migration.sql:/docker-entrypoint-initdb.d/009-create-lockers.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    read_only: true
+    tmpfs:
+      - /var/run/postgresql:rw,noexec,size=16m
+      - /tmp:rw,noexec,size=16m
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    logging: *default-logging
+    networks:
+      - alentapp-prod-network
+
+volumes:
+  postgres-prod-data:
+
+networks:
+  alentapp-prod-network:
+    name: alentapp-prod-network
+    driver: bridge
