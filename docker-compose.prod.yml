@@ -135,6 +135,30 @@ services:
     networks:
       - alentapp-prod-network
 
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: alentapp-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-prod-data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+    logging: *default-logging
+    networks:
+      - alentapp-prod-network
+
 volumes:
   postgres-prod-data:
 
