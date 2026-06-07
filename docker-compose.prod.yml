@@ -69,6 +69,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}    
     ports:
       - "3000:3000"
+      - "9464:9464"
     depends_on:
       db:
         condition: service_healthy
@@ -134,8 +135,61 @@ services:
     networks:
       - alentapp-prod-network
 
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: alentapp-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-prod-data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+    logging: *default-logging
+    networks:
+      - alentapp-prod-network
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: alentapp-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP}
+    volumes:
+      - grafana-prod-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+    logging: *default-logging
+    networks:
+      - alentapp-prod-network
+
 volumes:
   postgres-prod-data:
+  prometheus-prod-data:
+  grafana-prod-data:
 
 networks:
   alentapp-prod-network:
