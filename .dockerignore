@@ -1,4 +1,13 @@
 node_modules
+**/node_modules
 dist
+**/dist
 .git
 *.log
+**/*.test.ts
+**/*.integration.test.ts
+**/*.e2e.test.ts
+**/.env
+test-results
+e2e-fullstack
+playwright.fullstack.config.ts

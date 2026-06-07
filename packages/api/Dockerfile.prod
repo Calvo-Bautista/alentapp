@@ -1,0 +1,34 @@
+# ============ Stage 1: build (compila la app) ============
+FROM node:22-alpine AS build
+WORKDIR /app
+# Manifiestos primero, para cachear la capa de dependencias
+COPY package*.json ./
+COPY packages/api/package.json ./packages/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/web/package.json ./packages/web/
+RUN npm ci
+# Código de la API + shared (la web no hace falta para la API)
+COPY packages/api ./packages/api
+COPY packages/shared ./packages/shared
+RUN npm run build -w packages/api          # prisma generate + esbuild -> dist/
+
+# ============ Stage 2: deps de producción ============
+FROM node:22-alpine AS prod-deps
+WORKDIR /app
+COPY package*.json ./
+COPY packages/api/package.json ./packages/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/web/package.json ./packages/web/
+RUN npm ci --omit=dev
+
+# ============ Stage 3: runtime (imagen final) ============
+FROM node:22-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=build /app/packages/api/dist ./packages/api/dist
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
+  CMD wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1
+CMD ["node", "packages/api/dist/app.js"]

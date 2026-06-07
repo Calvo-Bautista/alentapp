@@ -201,7 +201,8 @@ export function buildApp() {
 }
 
 // Solo iniciar el servidor si el script se ejecuta directamente (no cuando es importado por vitest)
-if (process.argv[1] && process.argv[1].endsWith('app.ts')) {
+const entryPoint = process.argv[1] ?? '';
+if (entryPoint.endsWith('app.ts') || entryPoint.endsWith('app.js')) {
     const server = buildApp();
     const port = parseInt(process.env.PORT || '3000', 10);
 
