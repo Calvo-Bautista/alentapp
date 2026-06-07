@@ -1,3 +1,5 @@
+import './infrastructure/telemetry.js';
+import { sdk } from './infrastructure/telemetry.js';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { PostgresMemberRepository } from './infrastructure/PostgresMemberRepository.js';
@@ -213,6 +215,7 @@ if (entryPoint.endsWith('app.ts') || entryPoint.endsWith('app.js')) {
     ['SIGINT', 'SIGTERM'].forEach((signal) => {
         process.on(signal, async () => {
             await server.close();
+            await sdk.shutdown();
             process.exit(0);
         });
     });
