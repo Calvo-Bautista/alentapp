@@ -3,7 +3,7 @@
 **Materia:** Ingeniería y Calidad de Software – 2026
 **TP Integrador – Actividad 4: Preparando para Producción**
 **Grupo:** 12
-**Integrantes:** _(completar)_
+**Integrantes:** Pedro Moyano, Milagros Reale, Franco Jiménez, Franco Portillo, Bautista Calvo
 
 En esta última fase verificamos que todo lo que armamos en la Fase 3 realmente funcione y cumpla con lo que pedía la consigna. Levantamos el entorno de producción completo (`docker-compose.prod.yml`), medimos el antes y el después, y chequeamos seguridad y observabilidad. Acá dejamos los resultados y las decisiones que tomamos en el camino.
 
@@ -15,8 +15,8 @@ En esta última fase verificamos que todo lo que armamos en la Fase 3 realmente 
 | Tamaño imagen **Web** | 861 MB | **93.7 MB** | **−89 %** |
 | Memoria API (idle) | — | 54 MB / 256 MB | dentro del límite |
 | Memoria Web (idle) | — | 14 MB / 256 MB | dentro del límite |
-| Tiempo de startup (stack completo) | — | ~17 s (hasta `healthy`) | ✅ |
-| Endpoints accesibles | — | API `:3000` y Web `:80` responden OK | ✅ |
+| Tiempo de startup (stack completo) | — | ~17 s (hasta `healthy`) | OK |
+| Endpoints accesibles | — | API `:3000` y Web `:80` responden OK | OK |
 
 Las dos imágenes superaron la meta del 70 % de reducción. La web es la que más bajó porque pasamos del dev server de Vite a servir estáticos con nginx.
 
@@ -24,28 +24,28 @@ Las dos imágenes superaron la meta del 70 % de reducción. La web es la que má
 
 | Medida | Cómo lo verificamos | Resultado |
 |--------|---------------------|-----------|
-| Usuario no-root | `docker exec alentapp-api whoami` | `node` ✅ |
-| Sin herramientas de build | `docker exec alentapp-api which tsc` | no existe ✅ |
-| Read-only filesystem | `docker exec alentapp-api touch /test` | `Read-only file system` ✅ |
-| Capabilities mínimas | `cap_drop: ALL` + solo las necesarias por servicio | ✅ |
-| Secrets fuera del código | variables en `.env` (no versionado), referenciadas con `${VAR}` | ✅ |
-| Healthchecks | `docker compose ps` | api / db / web en **healthy** ✅ |
+| Usuario no-root | `docker exec alentapp-api whoami` | `node`  |
+| Sin herramientas de build | `docker exec alentapp-api which tsc` | no existe |
+| Read-only filesystem | `docker exec alentapp-api touch /test` | `Read-only file system` |
+| Capabilities mínimas | `cap_drop: ALL` + solo las necesarias por servicio | OK |
+| Secrets fuera del código | variables en `.env` (no versionado), referenciadas con `${VAR}` | OK |
+| Healthchecks | `docker compose ps` | api / db / web en **healthy** OK |
 
 ## 4.3 Verificación de observabilidad
 
 | Punto | Resultado |
 |-------|-----------|
-| OpenTelemetry exporta métricas | `:9464/metrics` devuelve 90 métricas ✅ |
-| Prometheus scrapea la API | target `alentapp-api` en **UP** ✅ |
-| Grafana con datasource Prometheus | configurado por provisioning ✅ |
-| Dashboard RED | "RED - Alentapp API" con 6 paneles ✅ |
-| Los gráficos responden al tráfico | sí, al generar requests se mueven ✅ |
-| Métricas de error | los 4xx/5xx se reflejan en el panel de tasa de error ✅ |
+| OpenTelemetry exporta métricas | `:9464/metrics` devuelve 90 métricas OK|
+| Prometheus scrapea la API | target `alentapp-api` en **UP** OK |
+| Grafana con datasource Prometheus | configurado por provisioning OK |
+| Dashboard RED | "RED - Alentapp API" con 6 paneles OK|
+| Los gráficos responden al tráfico | sí, al generar requests se mueven OK |
+| Métricas de error | los 4xx/5xx se reflejan en el panel de tasa de error OK|
 
 ## 4.4 Arquitectura final
 
 El entorno productivo quedó con 5 contenedores en una red interna (`alentapp-prod-network`):
-
+![Diagrama Arquitectura](img/05-diagrama.png)
 ```
 [ Web (nginx :80) ] → [ API (Fastify :3000, métricas :9464) ] → [ DB (Postgres) ]
                                       │
