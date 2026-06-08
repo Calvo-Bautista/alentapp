@@ -1,32 +1,40 @@
 # ============ Stage 1: build (compila la app) ============
 FROM node:22-alpine AS build
 WORKDIR /app
-# Manifiestos primero, para cachear la capa de dependencias
 COPY package*.json ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/web/package.json ./packages/web/
 RUN npm ci
-# Código de la API + shared (la web no hace falta para la API)
+COPY tsconfig.json ./
 COPY packages/api ./packages/api
 COPY packages/shared ./packages/shared
-RUN npm run build -w packages/api          # prisma generate + esbuild -> dist/
+RUN npm run build -w packages/api
 
-# ============ Stage 2: deps de producción ============
+# ============ Stage 2: deps de produccion (SOLO las de la API) ============
 FROM node:22-alpine AS prod-deps
 WORKDIR /app
-COPY package*.json ./
-COPY packages/api/package.json ./packages/api/
-COPY packages/shared/package.json ./packages/shared/
-COPY packages/web/package.json ./packages/web/
-RUN npm ci --omit=dev
+COPY package-lock.json ./package-lock.json
+COPY packages/api/package.json ./packages/api/package.json
+WORKDIR /app/packages/api
+RUN PRISMA_RUNTIME_VERSION="$(node -e "const lock = require('/app/package-lock.json'); const version = lock.packages?.['node_modules/@prisma/client']?.version; if (!version) throw new Error('No @prisma/client version found in package-lock.json'); process.stdout.write(version);")" \
+    && npm pkg delete dependencies.@prisma/client \
+    && npm pkg set dependencies.@prisma/client-runtime-utils="$PRISMA_RUNTIME_VERSION" \
+    && npm install --omit=dev --ignore-scripts --no-audit --no-fund --no-package-lock \
+    && npm cache clean --force
 
 # ============ Stage 3: runtime (imagen final) ============
 FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=prod-deps /app/packages/api/node_modules ./packages/api/node_modules
 COPY --from=build /app/packages/api/dist ./packages/api/dist
+RUN rm -rf /usr/local/lib/node_modules/npm \
+    /usr/local/bin/npm \
+    /usr/local/bin/npx \
+    /opt/yarn-* \
+    /usr/local/bin/yarn \
+    /usr/local/bin/yarnpkg
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
