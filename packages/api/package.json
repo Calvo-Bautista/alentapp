@@ -7,8 +7,12 @@
         "dev": "tsx watch src/app.ts",
         "build": "prisma generate --config prisma.config.ts && esbuild $(find src -name '*.ts' ! -name '*.test.ts' ! -name '*.integration.test.ts' ! -name '*.e2e.test.ts' ! -path 'src/generated/*') --outdir=dist --outbase=src --platform=node --format=esm --target=node22 && cp -r src/generated dist/generated",
         "start": "node dist/app.js",
-        "test": "vitest",
-        "coverage": "vitest run --coverage"
+        "test": "npm run test:unit && npm run test:integration",
+        "test:unit": "vitest run --config vitest.unit.config.ts",
+        "test:integration": "vitest run --config vitest.integration.config.ts",
+        "test:e2e": "vitest run --config vitest.e2e.config.ts",
+        "test:watch": "vitest --config vitest.unit.config.ts",
+        "coverage": "vitest run --config vitest.unit.config.ts --coverage"
     },
     "dependencies": {
         "@fastify/cors": "^11.2.0",
