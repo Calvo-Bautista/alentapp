@@ -25,7 +25,7 @@ Las dos imágenes superaron la meta del 70 % de reducción. La web es la que má
 | Medida | Cómo lo verificamos | Resultado |
 |--------|---------------------|-----------|
 | Usuario no-root | `docker exec alentapp-api whoami` | `node`  |
-| Sin herramientas de build | `docker exec alentapp-api which tsc` | no existe |
+| Sin herramientas de build | `docker exec alentapp-api sh -c 'for cmd in npm npx tsc tsx python python3 prisma; do command -v "$cmd" || echo "$cmd: no existe"; done'` | npm, npx, tsc, tsx, Python y Prisma CLI no existen |
 | Read-only filesystem | `docker exec alentapp-api touch /test` | `Read-only file system` |
 | Capabilities mínimas | `cap_drop: ALL` + solo las necesarias por servicio | OK |
 | Secrets fuera del código | variables en `.env` (no versionado), referenciadas con `${VAR}` | OK |
@@ -67,7 +67,7 @@ El entorno productivo quedó con 5 contenedores en una red interna (`alentapp-pr
 - **Sacar el CLI de Prisma del runtime**: el CLI + Prisma Studio (que arrastra react-dom, chart.js, etc.) ocupaban ~450 MB y no se usan para correr la app (las migraciones las hace la DB al inicializarse). Sacarlos fue lo que nos llevó de 782 MB a 326 MB.
 - **nginx para el frontend**: el dev server de Vite no sirve para producción; nginx es liviano y está pensado para servir estáticos.
 - **Hook global de Fastify para las métricas RED**: en vez de instrumentar los 6 controllers uno por uno, capturamos las métricas en un solo lugar con un hook `onResponse`.
-- **OpenTelemetry solo con HTTP**: usamos solo `HttpInstrumentation` en lugar de `auto-instrumentations-node` (que trae instrumentaciones de todo) para no inflar la imagen.
+- **OpenTelemetry con instrumentaciones específicas**: usamos únicamente `HttpInstrumentation` y `FastifyInstrumentation` en lugar de `auto-instrumentations-node`, que trae instrumentaciones innecesarias para esta API e infla la imagen.
 - **read_only + tmpfs**: filesystem de solo lectura, con tmpfs solo en las carpetas que cada servicio necesita escribir.
 - **Secrets en `.env`**: sacamos las credenciales del control de versiones.
 
@@ -77,7 +77,7 @@ El entorno productivo quedó con 5 contenedores en una red interna (`alentapp-pr
 - **El server no arrancaba compilado**: `app.ts` solo levantaba si el archivo terminaba en `app.ts`, así que con `node dist/app.js` no hacía nada. Tuvimos que ampliar esa condición a `app.js`.
 - **`pg` estaba en devDependencies**: el adapter de Prisma lo necesita en runtime, así que con `--omit=dev` la API explotaba al conectar. Lo movimos a `dependencies`.
 - **La imagen de la API era enorme (961 MB)**: la fuimos optimizando (solo deps de la API, sacar el CLI de Prisma, reducir OTel) hasta llegar a 326 MB.
-- **`FastifyInstrumentation` deprecado**: lo sacamos y dejamos solo la instrumentación de HTTP, que es la que genera las métricas que usa el dashboard.
+- **`auto-instrumentations-node` inflaba la imagen**: lo reemplazamos por `HttpInstrumentation` y `FastifyInstrumentation` configuradas explícitamente, conservando la instrumentación necesaria sin instalar integraciones que la API no utiliza.
 
 ### Lo que más nos costó
 
