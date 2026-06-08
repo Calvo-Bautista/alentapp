@@ -1,6 +1,7 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { FastifyInstrumentation } from '@opentelemetry/instrumentation-fastify';
 import { metrics } from '@opentelemetry/api';
 
 // No arrancar el SDK en los tests (si no, levanta el puerto 9464 en cada test)
@@ -9,9 +10,8 @@ if (process.env.NODE_ENV !== 'test') {
   const sdk = new NodeSDK({
     metricReader: prometheusExporter,
     instrumentations: [
-      getNodeAutoInstrumentations({
-        '@opentelemetry/instrumentation-fs': { enabled: false },
-      }),
+      new HttpInstrumentation(),
+      new FastifyInstrumentation(),
     ],
   });
   sdk.start();
