@@ -27,9 +27,13 @@ Las dos imágenes superaron la meta del 70 % de reducción. La web es la que má
 | Usuario no-root | `docker exec alentapp-api whoami` | `node`  |
 | Sin herramientas de build | `docker exec alentapp-api sh -c 'for cmd in npm npx tsc tsx python python3 prisma; do command -v "$cmd" || echo "$cmd: no existe"; done'` | npm, npx, tsc, tsx, Python y Prisma CLI no existen |
 | Read-only filesystem | `docker exec alentapp-api touch /test` | `Read-only file system` |
-| Capabilities mínimas | `cap_drop: ALL` + solo las necesarias por servicio | OK |
+| Capabilities mínimas | `docker inspect alentapp-api --format 'CapDrop={{json .HostConfig.CapDrop}} CapAdd={{json .HostConfig.CapAdd}}'` y `docker exec alentapp-api sh -c 'grep -E "Cap(Inh\|Prm\|Eff\|Bnd\|Amb)" /proc/1/status'` | `CapDrop=["ALL"]`, `CapAdd=null` y capabilities efectivas en cero |
 | Secrets fuera del código | variables en `.env` (no versionado), referenciadas con `${VAR}` | OK |
 | Healthchecks | `docker compose ps` | api / db / web en **healthy** OK |
+
+La API no conserva ninguna capability efectiva: `CapInh`, `CapPrm`, `CapEff` y `CapAmb` tienen valor `0000000000000000`. También verificamos que `mount` falla con `permission denied`. Aunque `ping` puede funcionar mediante sockets ICMP no privilegiados habilitados por el kernel, esto no implica que el contenedor conserve `NET_RAW`; `CapDrop=["ALL"]` y `CapEff=0` confirman que todas las capabilities fueron eliminadas.
+
+![Capabilities](img/06-captura-capabilities.png)
 
 ## 4.3 Verificación de observabilidad
 
